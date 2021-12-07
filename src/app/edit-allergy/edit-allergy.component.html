@@ -1,0 +1,842 @@
+<!--BEGIN LICENSE BLOCK--> 
+<!--Interneuron Terminus
+
+Copyright(C) 2021  Interneuron CIC
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.If not, see<http://www.gnu.org/licenses/>. -->
+<!--END LICENSE BLOCK--> 
+<div *ngIf="selectedAllergiesView === 'edit'">
+  <form  #editAllergyForm="ngForm">
+    <button class="btn btn-info text-white" (click)="cancelEditingAllergy()"
+    [disabled]="!editAllergyForm.form.valid || allergyIntolerance.reactionconcepts.length == 0 || allergyIntolerance.reportedbygroup.length == 0">
+      <fa name="arrow-left"></fa> Back
+    </button>
+
+    <br /><br />
+
+    <!-- <div *ngIf="allergyIntolerance">
+      {{allergyIntolerance.verificationstatus}}
+    </div>
+
+    <div *ngIf="uneditedAllergyIntollerence">
+      {{uneditedAllergyIntollerence.verificationstatus}}
+    </div> -->
+
+    <div class="card">
+      <div class="card-header bg-secondary text-dark">
+        <div class="row">
+          <div class="col-md-6">
+            <h5>
+              <span *ngIf="appService.blocked">
+                <fa name="lock" class="text-info"></fa> &nbsp;
+              </span>
+              Edit Allergies and Intolerances <br>
+            </h5>
+
+          </div>
+          <div class="col-md-6">
+            <button class="btn btn-info float-right text-white" (click)="viewHistory()"
+              style="margin-left: 7px; margin-right: 7px;">
+              <fa name="history"></fa> History
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <div *ngIf="!appService.blocked">
+          <div *ngIf="allergyIntolerance">
+            <div class="h6">
+
+              <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'"
+                class="border rounded bg-light text-secondary" style="padding: 5px; font-weight: bold;">
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
+                  <fa name="flag"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                  <fa name="exclamation-triangle"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
+                  -
+                </span>
+                {{allergyIntolerance.causativeagentdescription}}
+              </div>
+
+              <div *ngIf="allergyIntolerance.clinicalstatusvalue == 'Active'" [ngClass]="{
+                                  'border rounded bg-danger text-white': allergyIntolerance.causativeagentcode === 'Not possible to ascertain if patient has any allergies',
+                                  'border rounded bg-success text-white' : allergyIntolerance.causativeagentcode === 'No known allergies',
+                                  'border rounded bg-info text-white' : allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'
+                                }" style="padding: 5px; font-weight: bold;">
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
+                  <fa name="flag"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                  <fa name="exclamation-triangle"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
+                  -
+                </span>
+                {{allergyIntolerance.causativeagentdescription}}
+              </div>
+            </div>
+
+            <div
+              *ngIf="activeAllergiesAndFlags.length > 0 && allergyIntolerance.causativeagentcodesystem === 'NON-ALLERGY'">
+              <br />
+              <div class="alert alert-info">
+                <fa name="info-circle"></fa> &nbsp;
+                <span *ngIf="activeAllergiesAndFlags.length == 1">
+                  There is 1 active allergy and Intolerance for this patient. It is not possible to change the status for this flag.
+                </span>
+                <span *ngIf="activeAllergiesAndFlags.length > 1">
+                  There are {{activeAllergies.length}} active allergies and Intolerances for this patient. It is not possible to change the
+                  status for this flag.
+                </span>
+
+              </div>
+            </div>
+
+            <!-- Reactions -->
+            <div>
+
+              <div *ngIf="allergyIntolerance.category != 'Flag' && showAllergyReactions">
+                <label>Select Reaction(s)</label>
+                <p-autoComplete name="reactionconcepts" [suggestions]="resultsReactions" autoCompleteValidation [style]="{'width':'100%'}"
+                  [inputStyle]="{'width':'100%'}" (completeMethod)="searchReactions($event)" [multiple]="true"
+                  (onSelect)="selectReactionValue($event)" (onUnselect)="unSelectReactionValue($event)" [minLength]="3"
+                  delay="1000" #autocomplete [(ngModel)]="allergyIntolerance.reactionconcepts" field="term"
+                  [ngClass]="{ 'is-invalid': allergyIntolerance.reactionconcepts.length == '0' }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                  <ng-template let-reaction pTemplate="item">
+                    <div class="ui-helper-clearfix" style="border-bottom:1px solid #D5D5D5">
+                      <div style="font-size:14px;margin:10px 10px 0 0">
+                        <span class="text-secondary" *ngIf="reaction.code === '74964007'">
+                          {{ reaction.term }}
+                        </span>
+                        <span class="text-primary" *ngIf="reaction.code != '74964007'">
+                          {{ reaction.term }}
+                          <!-- (SNOMED CT - {{ reaction.code }}) -->
+                        </span>
+                      </div>
+                    </div>
+                  </ng-template>
+                </p-autoComplete>
+                <div [hidden]="allergyIntolerance.reactionconcepts.length > 0" class="text-danger">
+                  <i>Please add at least one reaction, you can add an uncoded reaction if required.</i>
+                </div>
+
+
+                <div style="margin-top: 7px;" *ngIf="showAllergyReactions">
+                  <ul class="list-group" *ngFor="let opt of allergyIntolerance.reactionconcepts">
+                    <li class="list-group-item bg-info text-white"
+                      style="padding-top: 0.25em; padding-left: 1.25em; padding-bottom: 0px;">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <h6>
+                            <fa name="circle" class="text-warning"></fa> {{opt.term}}
+                            <!-- <span
+                              *ngIf="opt.code != '74964007'">(SNOMED
+                              CT: {{opt.code}})</span> -->
+                          </h6>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- <code>
+              {{ allergyIntolerance.reactionconcepts | json}}
+            </code> -->
+
+                <br />
+                <div class="form-group">
+                  <label for="manifestationnotes">Reaction Notes:</label>
+                  <textarea name="manifestationnotes" id="manifestationnotes" class="form-control"
+                    [(ngModel)]="allergyIntolerance.manifestationnotes" #manifestationnotes="ngModel" rows="3"
+                    [ngClass]="{ 'is-invalid': manifestationnotes.invalid }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"></textarea>
+
+                  <div [hidden]="manifestationnotes.valid || !appService.roleAccess('Edit Allergy') || (!appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                    <i>Reaction notes is required</i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- End reactions -->
+
+            <div class="border rounded bg-secondary text-white" style="padding: 5px; font-weight: bold;">
+              Details
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <!-- Content goes here  -->
+                <!-- <form autocomplete="off"> -->
+
+                  <div class="form-group">
+                    <label for="clinicalstatusvalue"><span class="text-secondary"
+                        style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('status')">
+                        <fa name="info-circle"></fa>
+                      </span>
+                      Status:</label>
+                    <select name="clinicalstatusvalue" id="clinicalstatusvalue" class="form-control"
+                      [disabled]="activeAllergies.length > 0 && allergyIntolerance.causativeagentcodesystem === 'NON-ALLERGY' || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                      (change)="checkActiveEnteredInError()" [(ngModel)]="allergyIntolerance.clinicalstatusvalue" required
+                      #clinicalstatusvalue="ngModel" [ngClass]="{ 'is-invalid': clinicalstatusvalue.invalid }">
+                      <option *ngFor="let opt of clinicalStatusList" value="{{ opt.allergyclinicalstatus_id }}">
+                        {{ opt.clinicalstatus }}
+                      </option>
+                      <!-- <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option> -->
+                    </select>
+                    <div
+                      [hidden]="clinicalstatusvalue.valid || (activeAllergies.length > 0 && allergyIntolerance.causativeagentcodesystem === 'NON-ALLERGY') || !appService.roleAccess('Edit Allergy') || !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                      class="text-danger">
+                      <i>Status is required</i>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <div class="form-group">
+                          <label for="category"> <span class="text-secondary" style="cursor: pointer; font-size: 0.7em;"
+                              (click)="viewDescription('categories')">
+                              <fa name="info-circle"></fa>
+                            </span> Category:
+                          </label>
+                          <select name="category" id="category" class="form-control"
+                            [(ngModel)]="allergyIntolerance.category" required #category="ngModel"
+                            [ngClass]="{ 'is-invalid': category.invalid }" (change)="onCategoryChange($event)"
+                            [disabled]="(!appService.roleAccess('Edit Allergy') ) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                            <option value="">Please Select</option>
+                            <option *ngFor="let opt of categoryList" value="{{ opt.allergycategory_id }}">
+                              {{ opt.allergycategory }}
+                            </option>
+                            <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                          </select>
+                          <div [hidden]="category.valid || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                            <i>Category is required</i>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="col-md-6">
+
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <div class="form-group">
+                          <label for="criticality"><span class="text-secondary" style="cursor: pointer; font-size: 0.7em;"
+                              (click)="viewDescription('criticality')">
+                              <fa name="info-circle"></fa>
+                            </span>
+                            Severity / criticality:</label>
+                          <select name="criticality" id="criticality" class="form-control"
+                            [(ngModel)]="allergyIntolerance.criticality" required #criticality="ngModel"
+                            [ngClass]="{ 'is-invalid': criticality.invalid }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                            <option value="">Please Select</option>
+                            <option *ngFor="let opt of criticalityList" value="{{ opt.allergycriticality_id }}">
+                              {{ opt.criticality }}
+                            </option>
+                            <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                          </select>
+                          <div [hidden]="allergyIntolerance.criticality" class="text-danger">
+                            <i>Severity /criticality is required</i>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-4">
+
+                      <!-- <div class="form-group">
+                        <label for="onsetdate">Onset:</label>
+                        <div class="input-group">
+                          <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY" bsDatepicker
+                            [maxDate]="maxDateValue" id="onsetdate" name="onsetdate" #onsetdate="ngModel"
+                            [(ngModel)]="allergyIntolerance.onsetdate" [bsConfig]="bsConfig"
+                            aria-describedby="onsetdate" />
+
+                        </div>
+                        <div [hidden]="onsetdate.valid" class="text-danger">
+                          <i>*Onset date is required</i>
+                        </div>
+                      </div> -->
+
+                    </div>
+                    <div class="col-md-2">
+                      &nbsp;
+                    </div>
+                    <div class="col-md-4">
+                      <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'">
+                        <div class="form-group">
+                          <label for="enddate">End date:</label>
+                          <div class="input-group">
+                            <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY"
+                              [maxDate]="maxDateValue" bsDatepicker id="enddate" name="enddate" #enddate="ngModel"
+                              [(ngModel)]="allergyIntolerance.enddate" [bsConfig]="bsConfig" aria-describedby="enddate"
+                              [required]="allergyIntolerance.clinicalstatusvalue != 'Active'"
+                              [ngClass]="{ 'is-invalid': enddate.invalid }" (keydown)="false"
+                              [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                          </div>
+                          <div [hidden]="enddate.valid" class="text-danger">
+                            <i>*End date is required</i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="col-md-2">
+                      <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'">
+                        <div style="margin-top: 35px;">
+                          <span class="" (click)="endDateToday()" style=" cursor: pointer;">
+                            <small>
+                              <fa name="arrow-left"></fa> Today
+                            </small>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <!-- <div class="form-group">
+                          <label for="lastoccurencedate">Last occurence date (if known):</label>
+                          <div class="input-group">
+                            <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY"
+                              [maxDate]="maxDateValue" bsDatepicker id="lastoccurencedate" name="lastoccurencedate"
+                              #lastoccurencedate="ngModel" [(ngModel)]="allergyIntolerance.lastoccurencedate"
+                              [bsConfig]="bsConfig" aria-describedby="lastoccurencedate" />
+
+                          </div>
+                          <div [hidden]="lastoccurencedate.valid" class="text-danger">
+                            <i>*Last occurence date date is required</i>
+                          </div>
+                        </div> -->
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="form-group">
+                    <label for="allergynotes">Notes:</label>
+                    <textarea name="allergynotes" id="allergynotes" class="form-control"
+                      [(ngModel)]="allergyIntolerance.allergynotes" #allergynotes="ngModel" rows="3"
+                      [ngClass]="{ 'is-invalid': allergynotes.invalid }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"></textarea>
+
+                    <div [hidden]="allergynotes.valid || !appService.roleAccess('Edit Allergy') || !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                      <i>Allergy and Intolerance notes is required</i>
+                    </div>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="form-group">
+                        <label for="reportedbygroup">Source:</label>
+                        <!-- <select name="reportedbygroup" id="reportedbygroup" class="form-control"
+                          [(ngModel)]="allergyIntolerance.reportedbygroup" required #reportedbygroup="ngModel">
+                          <option *ngFor="let opt of getReportedByList" value="{{ opt.allergyreportedbygroup_id }}">
+                            {{ opt.groupname }}
+                          </option>
+                        </select>
+                        <div [hidden]="reportedbygroup.valid" class="text-danger">
+                          <i>Reported by is required</i>
+                        </div> -->
+                        <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
+                          *ngIf="!saving" [data]="reportedByGroupList" name="reportedbygroup" id="reportedbygroup"
+                          [(ngModel)]="allergyIntolerance.reportedbygroup" (onSelect)="onItemSelect($event)"
+                          (onSelectAll)="onSelectAll($event)" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                          [ngClass]="{ 'is-invalid': allergyIntolerance.reportedbygroup.length > 0}">
+                        </ng-multiselect-dropdown>
+                        <div [hidden]="allergyIntolerance.reportedbygroup.length > 0" class="text-danger">
+                          <i>Please select atleast 1 value</i>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <!-- <div class="form-group">
+                        <label for="reportedbyname">
+                          Reported by name:
+                        </label>
+                        <input type="text" name="reportedbyname" id="reportedbyname" class="form-control"
+                          [(ngModel)]="allergyIntolerance.reportedbyname" #reportedbyname="ngModel" required
+                          [ngClass]="{ 'is-invalid': reportedbyname.invalid}"> -->
+
+                        <!-- <small>{{allergyIntolerance.reportedbydatetime | date:'dd/MM/yyyy HH:mma'}}</small> -->
+
+                        <!-- <div [hidden]="reportedbyname.valid" class="text-danger">
+                          <i>Reported by name is required</i>
+                        </div>
+                      </div> -->
+                    </div>
+
+                    <div class="col-md-4">
+                      <!-- <div style="margin-top: 25px;">
+                        <span class="" (click)="reportedByPatient()" style=" cursor: pointer;">
+                          <small>
+                            <fa name="arrow-left"></fa> Patient
+                          </small>
+                        </span>
+                        <br />
+                        <span class="" (click)="reportedByMe()" style=" cursor: pointer;">
+                          <small>
+                            <fa name="arrow-left"></fa> Me
+                          </small>
+                        </span>
+                      </div> -->
+                    </div>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-5">
+                      <div class="form-group">
+                        <label for="verificationstatus"> <span class="text-secondary"
+                            style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('verification')">
+                            <fa name="info-circle"></fa>
+                          </span>
+                          Validation Status:</label>
+                        <select name="verificationstatus" id="verificationstatus" class="form-control"
+                          [(ngModel)]="allergyIntolerance.verificationstatus" required #verificationstatus="ngModel"
+                          (change)="checkActiveEnteredInError()" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                          [ngClass]="{ 'is-invalid': (allergyIntolerance.clinicalstatusvalue == 'Active' && allergyIntolerance.verificationstatus === 'Entered in error') &&  verificationstatus.valid}">
+                          <option *ngFor="let opt of verificationStatusList"
+                            value="{{ opt.allergyverificationstatus_id }}">
+                            {{ opt.verificationstatus }}
+                          </option>
+                          <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                        </select>
+                        <div [hidden]="verificationstatus.valid || !appService.roleAccess('Edit Allergy') || !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                          <i>Verification status is required</i>
+                        </div>
+                        <div [hidden]="allergyIntolerance.clinicalstatusvalue != 'Active' || (allergyIntolerance.verificationstatus != 'Entered in error')" class="text-danger">
+                          <i>Unable to have Status set to 'Active' and Verification Status set to 'Entered in error</i>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="form-group">
+                        <label>Validated By:</label>
+                        <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
+                          {{allergyIntolerance.assertedby}} at
+                          {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div style="margin-top: 35px;" *ngIf="appService.roleAccess('Edit Allergy') || (appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                        <!-- <button class="btn btn-secondary text-white btn-sm btn-block" (click)="reverifyAllergy()">
+                          <fa name="refresh"></fa>&nbsp;Reverify
+                        </button> -->
+                        <img src="assets/images/re-verify icon.svg" (click)="reverifyAllergy()" title="Reverify">
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Documented by:</label>
+                        <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
+                          {{allergyIntolerance.recordedby}} at
+                          {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="form-group" hidden>
+                    <label for="displaywarning">Inactive Error Check:</label>
+                    <div class="input-group">
+                      <input class="form-control" type="text" style="width:8em;" id="displaywarning" name="displaywarning"
+                        #displaywarning="ngModel" [(ngModel)]="allergyIntolerance.displaywarning" required>
+                    </div>
+                  </div>
+
+
+
+                  <div class="alert alert-danger" [hidden]="editAllergyForm.form.valid">
+                    <h6>
+                      <fa name="exclamation-triangle"></fa> Please ensure you have completed all mandatory fields
+                    </h6>
+                    <div [hidden]="displaywarning.valid">
+                      <h6>
+                        <fa name="exclamation-triangle"></fa> {{displayWarningMessage}}
+                      </h6>
+                    </div>
+                  </div>
+
+                  <div *ngIf="allergyIntolerance.reactionconcepts">
+                    <div class="alert alert-danger" *ngIf="allergyIntolerance.reactionconcepts.length == 0">
+                      <fa name="exclamation-triangle"></fa> Please add at least one reaction, you can add an uncoded
+                      reaction
+                      if
+                      required.
+                    </div>
+                  </div>
+
+                  <hr />
+
+                  <button class="btn btn-info text-white btn-block" (click)="saveEditAllergy()" [hidden]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                    [disabled]="!editAllergyForm.form.valid || allergyIntolerance.reactionconcepts.length == 0 || allergyIntolerance.reportedbygroup.length == 0 || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                    Save
+                  </button>
+
+                <!-- </form> -->
+                <!-- Content ends here -->
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+
+
+        <div *ngIf="appService.blocked">
+          <div *ngIf="allergyIntolerance">
+            <div class="h6">
+
+              <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'"
+                class="border rounded bg-light text-secondary" style="padding: 5px; font-weight: bold;">
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
+                  <fa name="flag"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                  <fa name="exclamation-triangle"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
+                  -
+                </span>
+                {{allergyIntolerance.causativeagentdescription}}
+              </div>
+
+              <div *ngIf="allergyIntolerance.clinicalstatusvalue == 'Active'" [ngClass]="{
+                                  'border rounded bg-danger text-white': allergyIntolerance.causativeagentcode === 'Not possible to ascertain if patient has any allergies',
+                                  'border rounded bg-success text-white' : allergyIntolerance.causativeagentcode === 'No known allergies',
+                                  'border rounded bg-info text-white' : allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'
+                                }" style="padding: 5px; font-weight: bold;">
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
+                  <fa name="flag"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                  <fa name="exclamation-triangle"></fa> &nbsp;
+                </span>
+                <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
+                  -
+                </span>
+                {{allergyIntolerance.causativeagentdescription}}
+              </div>
+            </div>
+
+            <!-- Reactions -->
+            <div>
+
+              <div *ngIf="allergyIntolerance.category != 'Flag' && showAllergyReactions">
+                <label>Reaction(s)</label>
+
+
+                <div style="margin-top: 7px;" *ngIf="showAllergyReactions">
+                  <ul class="list-group" *ngFor="let opt of allergyIntolerance.reactionconcepts">
+                    <li class="list-group-item bg-info text-white"
+                      style="padding-top: 0.25em; padding-left: 1.25em; padding-bottom: 0px;">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <h6>
+                            <fa name="circle" class="text-warning"></fa> {{opt.term}}
+                            <!-- <span
+                              *ngIf="opt.code != '74964007'">(SNOMED
+                              CT: {{opt.code}})</span> -->
+                          </h6>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <!-- <code>
+              {{ allergyIntolerance.reactionconcepts | json}}
+            </code> -->
+
+                <br />
+                <div class="form-group">
+                  <label for="manifestationnotes">Reaction Notes:</label>
+                  <textarea name="manifestationnotes" id="manifestationnotes" class="form-control" disabled
+                    [(ngModel)]="allergyIntolerance.manifestationnotes" #manifestationnotes="ngModel" rows="3"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- End reactions -->
+
+            <div class="border rounded bg-secondary text-white" style="padding: 5px; font-weight: bold;">
+              Details
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <!-- Content goes here  -->
+                <form #editAllergyForm="ngForm" autocomplete="off">
+
+                  <div class="form-group">
+                    <label for="clinicalstatusvalue"><span class="text-secondary"
+                        style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('status')">
+                        <fa name="info-circle"></fa>
+                      </span>
+                      Status:</label>
+                    <select name="clinicalstatusvalue" id="clinicalstatusvalue" class="form-control"
+                      [disabled]="activeAllergies.length > 0 && allergyIntolerance.causativeagentcodesystem === 'NON-ALLERGY' || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                      (change)="checkActiveEnteredInError()" [(ngModel)]="allergyIntolerance.clinicalstatusvalue"
+                      #clinicalstatusvalue="ngModel">
+                      <option *ngFor="let opt of clinicalStatusList" value="{{ opt.allergyclinicalstatus_id }}">
+                        {{ opt.clinicalstatus }}
+                      </option>
+                      <!-- <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option> -->
+                    </select>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <div class="form-group">
+                          <label for="category"> <span class="text-secondary" style="cursor: pointer; font-size: 0.7em;"
+                              (click)="viewDescription('categories')">
+                              <fa name="info-circle"></fa>
+                            </span> Category:
+                          </label>
+                          <select name="category" id="category" class="form-control" disabled
+                            [(ngModel)]="allergyIntolerance.category" required #category="ngModel">
+                            <option *ngFor="let opt of categoryList" value="{{ opt.allergycategory_id }}">
+                              {{ opt.allergycategory }}
+                            </option>
+                            <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                          </select>
+                        </div>
+                      </div>
+
+                    </div>
+                    <div class="col-md-6">
+
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <div class="form-group">
+                          <label for="criticality"><span class="text-secondary" style="cursor: pointer; font-size: 0.7em;"
+                              (click)="viewDescription('criticality')">
+                              <fa name="info-circle"></fa>
+                            </span>
+                            Severity / criticality:</label>
+                          <select name="criticality" id="criticality" class="form-control" disabled
+                            [(ngModel)]="allergyIntolerance.criticality" required #criticality="ngModel">
+                            <option *ngFor="let opt of criticalityList" value="{{ opt.allergycriticality_id }}">
+                              {{ opt.criticality }}
+                            </option>
+                            <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                          </select>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-4">
+
+                      <!-- <div class="form-group">
+                        <label for="onsetdate">Onset:</label>
+                        <div class="input-group">
+                          <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY" bsDatepicker
+                            disabled id="onsetdate" name="onsetdate" #onsetdate="ngModel"
+                            [(ngModel)]="allergyIntolerance.onsetdate" [bsConfig]="bsConfig"
+                            aria-describedby="onsetdate" />
+
+                        </div>
+                      </div> -->
+
+                    </div>
+                    <div class="col-md-2">
+                      &nbsp;
+                    </div>
+                    <div class="col-md-4">
+                      <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'">
+                        <div class="form-group">
+                          <label for="enddate">End date:</label>
+                          <div class="input-group">
+                            <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY" disabled
+                              bsDatepicker id="enddate" name="enddate" #enddate="ngModel"
+                              [(ngModel)]="allergyIntolerance.enddate" [bsConfig]="bsConfig" aria-describedby="enddate"
+                              [required]="allergyIntolerance.clinicalstatusvalue != 'Active'">
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
+                        <!-- <div class="form-group">
+                          <label for="lastoccurencedate">Last occurence date (if known):</label>
+                          <div class="input-group">
+                            <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY" disabled
+                              bsDatepicker id="lastoccurencedate" name="lastoccurencedate" #lastoccurencedate="ngModel"
+                              [(ngModel)]="allergyIntolerance.lastoccurencedate" [bsConfig]="bsConfig"
+                              aria-describedby="lastoccurencedate" />
+
+                          </div>
+                        </div> -->
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="form-group">
+                    <label for="allergynotes">Notes:</label>
+                    <textarea name="allergynotes" id="allergynotes" class="form-control" disabled
+                      [(ngModel)]="allergyIntolerance.allergynotes" #allergynotes="ngModel" rows="3"></textarea>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="form-group">
+                        <label for="reportedbygroup">Source:</label>
+                        <!-- <select name="reportedbygroup" id="reportedbygroup" class="form-control"
+                          [(ngModel)]="allergyIntolerance.reportedbygroup" required #reportedbygroup="ngModel">
+                          <option *ngFor="let opt of getReportedByList" value="{{ opt.allergyreportedbygroup_id }}">
+                            {{ opt.groupname }}
+                          </option>
+                        </select>
+                        <div [hidden]="reportedbygroup.valid" class="text-danger">
+                          <i>Reported by is required</i>
+                        </div> -->
+                        <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
+                          disabled="true" *ngIf="!saving" [data]="reportedByGroupList" name="reportedbygroup"
+                          id="reportedbygroup" [(ngModel)]="allergyIntolerance.reportedbygroup"
+                          (onSelect)="onItemSelect($event)" (onSelectAll)="onSelectAll($event)">
+                        </ng-multiselect-dropdown>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <!-- <div class="form-group">
+                        <label for="reportedbyname">
+                          Reported by name:
+                        </label>
+                        <input type="text" name="reportedbyname" id="reportedbyname" class="form-control" disabled
+                          [(ngModel)]="allergyIntolerance.reportedbyname" #reportedbyname="ngModel" required>
+                      </div> -->
+                    </div>
+
+                    <div class="col-md-4">
+                      &nbsp;
+                    </div>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-5">
+                      <div class="form-group">
+                        <label for="verificationstatus"> <span class="text-secondary"
+                            style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('verification')">
+                            <fa name="info-circle"></fa>
+                          </span>
+                          Validation Status:</label>
+                        <select name="verificationstatus" id="verificationstatus" class="form-control" disabled
+                          [(ngModel)]="allergyIntolerance.verificationstatus" required #verificationstatus="ngModel"
+                          (change)="checkActiveEnteredInError()">
+                          <option *ngFor="let opt of verificationStatusList"
+                            value="{{ opt.allergyverificationstatus_id }}">
+                            {{ opt.verificationstatus }}
+                          </option>
+                          <!-- <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option> -->
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-md-5">
+                      <div class="form-group">
+                        <label>Validated By:</label>
+                        <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
+                          {{allergyIntolerance.assertedby}} at
+                          {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div style="margin-top: 35px;">
+                        <!-- <button class="btn btn-secondary text-white btn-sm btn-block" (click)="reverifyAllergy()">
+                          <fa name="refresh"></fa>&nbsp;Reverify
+                        </button> -->
+                      </div>
+                    </div>
+                  </div>
+
+
+
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label>Documented by:</label>
+                        <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
+                          {{allergyIntolerance.recordedby}} at
+                          {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  <div class="form-group" hidden>
+                    <label for="displaywarning">Inactive Error Check:</label>
+                    <div class="input-group">
+                      <input class="form-control" type="text" style="width:8em;" id="displaywarning" name="displaywarning"
+                        disabled #displaywarning="ngModel" [(ngModel)]="allergyIntolerance.displaywarning" required>
+                    </div>
+                  </div>
+
+                </form>
+                <!-- Content ends here -->
+              </div>
+            </div>
+
+
+          </div>
+        </div>
+
+
+
+
+      </div>
+    </div>
+  </form>
+
+  </div>

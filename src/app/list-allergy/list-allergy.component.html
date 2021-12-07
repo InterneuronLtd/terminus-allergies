@@ -1,0 +1,303 @@
+<!--BEGIN LICENSE BLOCK--> 
+<!--Interneuron Terminus
+
+Copyright(C) 2021  Interneuron CIC
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.If not, see<http://www.gnu.org/licenses/>. -->
+<!--END LICENSE BLOCK--> 
+<div *ngIf="selectedAllergiesView === 'list'">
+
+
+    <div class="card">
+      <div class="card-header bg-secondary text-dark">
+        <div class="row">
+          <div class="col-md-9">
+            <h5>
+              <span *ngIf="appService.blocked">
+                <fa name="lock" class="text-info"></fa> &nbsp;
+              </span>
+              Allergies and Intolerances
+            </h5>
+
+          </div>
+          <div class="col-md-3">
+          </div>
+        </div>
+      </div>
+      <div class="card-body">
+
+
+
+        <div *ngIf="allergyIntoleranceList">
+
+          <div *ngIf="activeAllergies.length == 0">
+            <div class="alert alert-info">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6>There are no active allergies and intolerances recorded for this patient</h6>
+                </div>
+                <div class="col-md-6">
+
+                </div>
+              </div>
+              <div class="row" *ngIf="!appService.blocked && (appService.roleAccess('Add Allergy') || appService.roleAccess('Edit Allergy'))">
+                <div class="col-md-6">
+                  <div *ngIf="NoKnownAllergiesRecorded && !ActiveNotAbleToAscertainRecorded" class="text-dark">
+                    <small>
+                      <fa name="info-circle"></fa> 'No Known Allergies and Intolerances' recorded previously
+                    </small>
+                  </div>
+
+                  <div *ngIf="!NoKnownAllergiesRecorded && !ActiveNotAbleToAscertainRecorded">
+                    <button class="btn btn-info btn-block btn-sm text-white" (click)="recordNoKnownAllergies()">
+                      <fa name="plus"></fa> No known Allergies and Intolerances
+                    </button>
+                  </div>
+
+                  <div *ngIf="ActiveNotAbleToAscertainRecorded" class="text-dark">
+                    <small>
+                      <fa name="info-circle"></fa> Only 1 of 'No known allergies and intolerances' or 'Not possible to ascertain if any
+                      allergies and intolerances' can be active
+                    </small>
+                  </div>
+
+
+
+
+                </div>
+                <div class="col-md-6">
+                  <div *ngIf="NotAbleToAscertainRecorded && !ActiveNoKnownAllergiesRecorded" class="text-dark">
+                    <small>
+                      <fa name="info-circle"></fa> 'Not possible to ascertain if any allergies and Intolerances' recorded previously
+                    </small>
+                  </div>
+
+                  <div *ngIf="!NotAbleToAscertainRecorded && !ActiveNoKnownAllergiesRecorded">
+                    <button class="btn btn-danger btn-block btn-sm text-white" (click)="recordNotAbleToVerify()">
+                      <fa name="plus"></fa> Not possible to ascertain if any allergies and Intolerances
+                    </button>
+                  </div>
+
+                  <div *ngIf="ActiveNoKnownAllergiesRecorded">
+                    <small>
+                      <fa name="info-circle"></fa> Only 1 of 'No known allergies and Intolerances' or 'Not possible to ascertain if any
+                      allergies and Intolerances' can be active
+                    </small>
+                  </div>
+
+
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <div>
+
+
+            <div class="row">
+              <div class="col-md-6">
+
+                <button class="btn btn-sm btn-info btn-block text-white float-right" (click)="addAllergy()"
+                  *ngIf="!appService.blocked && appService.roleAccess('Add Allergy')">
+                  <fa name="plus"></fa> Add Allergy and Intolerance
+                </button>
+
+
+              </div>
+              <div class="col-md-6">
+
+                <!-- <div *ngIf="allergyIntoleranceList.length > 0">
+                  <strong class="text-secondary">Reverify All</strong>
+                  <br />
+                  <span class="text-secondary" style="font-size: 25px;">
+                    <fa *ngIf="!reverifyList" name="refresh" (click)="reverifyAllAllergy()"></fa>
+                    <i class="fa fa-refresh fa-spin" *ngIf="reverifyList"></i>
+                  </span>
+
+                </div> -->
+
+                <!-- <button class="close text-secondary" (click)="refreshAlllergyList()" style="margin-top: 5px;">
+                  <fa *ngIf="!refreshingList" name="refresh"></fa>
+                  <i class="fa fa-refresh fa-spin" *ngIf="refreshingList"></i>
+                </button> -->
+
+
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="allergyIntoleranceList.length > 0">
+            <br />
+            <ul class="list-group" *ngFor="let opt of allergyIntoleranceList">
+              <li class="list-group-item"
+                [ngClass]="opt.clinicalstatusvalue == 'Active' ? 'list-group-item text-info' : 'list-group-item text-secondary'"
+                >
+
+                <div class="row" (click)="editAllergy(opt)">
+
+                  <div class="col-md-12">
+                    <div class="h6">
+
+                      <div *ngIf="opt.clinicalstatusvalue != 'Active'" class="border rounded bg-light"
+                        style="padding: 5px; font-weight: bold;">
+                        <span *ngIf="opt.causativeagentcodesystem == 'NON-ALLERGY'">
+                          <fa name="flag"></fa> &nbsp;
+                        </span>
+                        <span *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                          <fa name="exclamation-triangle"></fa> &nbsp;
+                        </span>
+                        {{opt.causativeagentdescription}}
+                      </div>
+                      <div *ngIf="opt.clinicalstatusvalue == 'Active'" [ngClass]="{
+                                  'border rounded bg-danger text-white': opt.causativeagentcode === 'Not possible to ascertain if patient has any allergies and intolerances',
+                                  'border rounded bg-success text-white' : opt.causativeagentcode === 'No known allergies and intolerances',
+                                  'border rounded bg-info text-white' : opt.causativeagentcodesystem != 'NON-ALLERGY'
+                                }" style="padding: 5px; font-weight: bold;">
+                        <span *ngIf="opt.causativeagentcodesystem == 'NON-ALLERGY'">
+                          <fa name="flag"></fa> &nbsp;
+                        </span>
+                        <span *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                          <fa name="exclamation-triangle"></fa> &nbsp;
+                        </span>
+                        {{opt.causativeagentdescription}}
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+
+                <div class="row" style="font-size: 0.8em;">
+                  <div class="col-md-1" (click)="editAllergy(opt)">
+                    <div>
+                      <strong class="text-secondary">Status</strong>
+                      <br />
+                      <span style="font-size: 15px;">
+                        {{opt.clinicalstatusvalue}}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-2" (click)="editAllergy(opt)">
+                    <strong class="text-secondary">Validation Status</strong>
+                    <br />
+                    <span style="font-size: 15px;">
+                      {{opt.verificationstatus}}<br>
+                      {{opt.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}
+                    </span>
+                  </div>
+                  <div class="col-md-2" (click)="editAllergy(opt)">
+                    <div *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                      <strong class="text-secondary">Criticality</strong>
+                      <br />
+                      <span style="font-size: 15px;">
+                        {{opt.criticality}}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-2" (click)="editAllergy(opt)">
+                    <div style="padding-left: 10px;" *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                      <strong class="text-secondary">Category</strong>
+                      <br />
+                      <span style="font-size: 15px;">
+                        {{opt.category}}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-3" (click)="editAllergy(opt)">
+                    <div style="padding-left: 10px;" *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                      <strong class="text-secondary">Reactions</strong>
+                      <br />
+                      <div *ngFor="let reaction of opt?.reactionconcepts">
+                        <span style="font-size: 15px;">
+                          {{(reaction.term)?reaction.term:reaction._term}}
+                        </span>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="col-md-1" (click)="editAllergy(opt)">
+                    <div style="padding-left: 10px;" *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
+                      <strong class="text-secondary">Notes</strong>
+                      <br />
+                      <span class="text-secondary" *ngIf="opt.manifestationnotes">
+                        <img src="assets/images/allergies/Notes.svg">
+                      </span>
+                    </div>
+                  </div>
+                  <div class="col-md-1" *ngIf="appService.roleAccess('Edit Allergy') || (appService.roleAccess('Add Allergy') && appService.loggedInUserName == opt.assertedby)">
+                    <strong class="text-secondary">Revalidate</strong>
+                    <br />
+                    <span class="text-secondary" style="font-size: 25px;">
+                      <!-- <fa name="refresh" (click)="reverifyAllergy(opt)"></fa> -->
+                      <img src="assets/images/re-verify icon.svg" (click)="reverifyAllergy(opt)">
+                    </span>
+
+                  </div>
+                </div>
+
+
+              </li>
+            </ul>
+
+
+          </div>
+
+
+        </div>
+
+        <br />
+        <br />
+
+        <div class="alert alert-secondary alert-dismissible fade show">
+          <div class="row">
+            <div class="col-md-1">
+              <h3>
+                <fa name="info-circle"></fa>
+              </h3>
+            </div>
+            <div class="col-md-11">
+              <small>Please note that this module will display all allergies and intolerances for the patient that
+                have recorded previously either from pre-operative assessments or any other modules in the Clinical
+                Platform.</small>
+            </div>
+          </div>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+      </div>
+
+      <div>
+        <div class="row">
+          <div class="col-md-6">
+            <button class="btn btn-secondary btn-sm text-white" (click)="cancel()">
+              <fa name="arrow-left"></fa> Return to main menu
+            </button>
+          </div>
+          <div class="col-md-6">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- <app-add-allergy *ngIf="selectedAllergiesView === 'add'"></app-add-allergy> -->

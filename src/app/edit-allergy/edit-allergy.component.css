@@ -1,0 +1,14 @@
+/*Removed Exclamation from errors*/
+.was-validated .form-control:invalid, .form-control.is-invalid {
+  background-image: none !important;
+}
+
+/* .multiselect-dropdown .dropdown-btn {
+  border-color: #dc3545 !important;
+} */
+
+/* .p-component, .p-component * {
+  border-color: #dc3545 !important;
+} */
+
+ 
