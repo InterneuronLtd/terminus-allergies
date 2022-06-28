@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -42,6 +42,7 @@ import { AllergyHistoryViewerService } from '../allergy-history-viewer/allergy-h
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { AllergyWithMeta } from '../models/baseviews/allergy-with-meta';
 import { AllergiesService } from '../services/allergies.service';
+import { AllergySources } from '../models/entities/allergy-source';
 
 @Component({
   selector: 'app-add-allergy',
@@ -65,6 +66,7 @@ export class AddAllergyComponent {
   criticalityList: AllergyCriticality[];
   verificationStatusList: AllergyVerificationStatus[];
   reportedByGroupList: AllergyReportedByGroup[];
+  sourceList: AllergySources[];
 
   refreshingList: boolean;
 
@@ -104,6 +106,7 @@ export class AddAllergyComponent {
   getCriticalityListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergycriticality&orderby=displayorder ASC";
   getVerificationStatusListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyverificationstatus&orderby=displayorder ASC";
   getReportedByGroupListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyreportedbygroup&orderby=displayorder ASC";
+  getSourceListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergysources&orderby=displayname ASC";
 
   private _person: Person;
   @Input() set person(value: Person) {
@@ -116,10 +119,20 @@ export class AddAllergyComponent {
     this.addAllergyStep = 1
     this.showAllergyReactions = true;
 
+    // this.dropdownSettings = {
+    //   singleSelection: false,
+    //   idField: 'allergyreportedbygroup_id',
+    //   textField: 'groupname',
+    //   selectAllText: 'Select All',
+    //   unSelectAllText: 'UnSelect All',
+    //   itemsShowLimit: 10,
+    //   allowSearchFilter: true
+    // };
+
     this.dropdownSettings = {
       singleSelection: false,
-      idField: 'allergyreportedbygroup_id',
-      textField: 'groupname',
+      idField: 'allergysources_id',
+      textField: 'source',
       selectAllText: 'Select All',
       unSelectAllText: 'UnSelect All',
       itemsShowLimit: 10,
@@ -149,7 +162,8 @@ export class AddAllergyComponent {
     await this.getClinicalStatusList();
     await this.getCriticalityList();
     await this.getVerificationStatusList();
-    await this.getReportedByList();
+    // await this.getReportedByList();
+    await this.getSourceList();
   }
 
   async  getAllergyListForPerson() {
@@ -273,11 +287,20 @@ export class AddAllergyComponent {
    )
   }
 
-  async  getReportedByList() {
+  // async  getReportedByList() {
+  //   await this.subscriptions.add(
+  //    this.apiRequest.getRequest(this.getReportedByGroupListURI)
+  //    .subscribe((response) => {
+  //      this.reportedByGroupList = JSON.parse(response);
+  //    })
+  //  )
+  // }
+
+  async  getSourceList() {
     await this.subscriptions.add(
-     this.apiRequest.getRequest(this.getReportedByGroupListURI)
+     this.apiRequest.getRequest(this.getSourceListURI)
      .subscribe((response) => {
-       this.reportedByGroupList = JSON.parse(response);
+       this.sourceList = JSON.parse(response);
      })
    )
   }
@@ -358,14 +381,15 @@ export class AddAllergyComponent {
       this.allergyIntolerance.enddate = null;
       this.allergyIntolerance.lastoccurencedate = this.allergyService.getDate();
 
-      this.allergyIntolerance.reportedbygroup = JSON.parse('[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]');
+      // this.allergyIntolerance.reportedbygroup = JSON.parse('[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]');
+      this.allergyIntolerance.reportedbygroup = JSON.parse('[ { "allergysources_id": "60df7d7e-5187-4105-97c0-689c2b8d2fbd", "source": "Patient - verbal" } ]');
       this.allergyIntolerance.reportedbyname = this.appService.currentPersonName;
       this.allergyIntolerance.reportedbydatetime = this.allergyService.getDateTime();
 
       this.allergyIntolerance.recordedby = this.appService.loggedInUserName;
       this.allergyIntolerance.recordeddatetime = this.allergyService.getDateTime();
 
-      this.allergyIntolerance.verificationstatus = "Unconfirmed";
+      this.allergyIntolerance.verificationstatus = "Confirmed";
       this.allergyIntolerance.assertedby = this.appService.loggedInUserName;
       this.allergyIntolerance.asserteddatetime = this.allergyService.getDateTime();
 
@@ -493,10 +517,10 @@ export class AddAllergyComponent {
 
           this.saving = false;
 
-          this.toasterService.showToaster("Success","Allergy and Intolerance Saved");
+          
           //Update patient banner
           this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
-
+          // this.toasterService.showToaster("Success","Allergy and Intolerance Saved");
           this.getAllergyListForPerson();
 
           if(this.allergyIntolerance.causativeagentcodesystem != "NON-ALLERGY" && this.allergyIntolerance.clinicalstatusvalue === "Active") {
@@ -519,7 +543,7 @@ export class AddAllergyComponent {
                       //Update patient banner
                       this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
                       this.getAllergyListForPerson();
-                      this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
+                      // this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
                     })
                   )
 

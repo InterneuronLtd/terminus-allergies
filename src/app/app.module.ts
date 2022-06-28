@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -39,7 +39,6 @@ import { FakeDataContractComponent } from "./fake-data-contract/fake-data-contra
 import { DataTablesModule } from "angular-datatables";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxSpinnerModule } from "ngx-spinner";
-import { AngularFontAwesomeModule } from "angular-font-awesome";
 import { ToastrModule } from "ngx-toastr";
 import { environment } from "src/environments/environment";
 import { FormioAppConfig, FormioModule } from "angular-formio";
@@ -66,64 +65,63 @@ import { AllergyHistoryViewerService } from "./allergy-history-viewer/allergy-hi
 import { AddAllergyComponent } from './add-allergy/add-allergy.component';
 import { ListAllergyComponent } from './list-allergy/list-allergy.component';
 import { EditAllergyComponent } from './edit-allergy/edit-allergy.component';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 //import { AutoCompleteValidationDirective } from "./utilities/auto-complete-validation";
 
 @NgModule({
-  declarations: [
-    AppComponent,
-    ViewerComponent,
-    FakeDataContractComponent,
-    IdentifierTransformPipe,
-    AllergiesComponent,
-    ModuleLoaderDirective,
-    LinebreaksPipe,
-    ConfirmationDialogComponent,
-    AllergyLookupDescriptionsComponent,
-    AllergyHistoryViewerComponent,
-    AddAllergyComponent,
-    ListAllergyComponent,
-    EditAllergyComponent,
-  ],
-  imports: [
-    FormioModule,
-    ToastrModule.forRoot({
-      timeOut: 10000,
-      positionClass: "toast-bottom-right",
-      preventDuplicates: true,
-    }),
-    AngularFontAwesomeModule,
-    BrowserAnimationsModule,
-    NgxSpinnerModule,
-    DataTablesModule,
-    BrowserModule,
-    ModalModule.forRoot(),
-    HttpClientModule,
-    FormsModule,
-    NgbModule,
-    BsDatepickerModule.forRoot(),
-    PopoverModule.forRoot(),
-    AutoCompleteModule,
-    NgMultiSelectDropDownModule.forRoot(),
-  ],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  providers: [
-    BsModalRef,
-    BsModalService,
-    { provide: FormioAppConfig, useValue: AppConfig },
-    BsDatepickerConfig,
-    ConfirmationDialogService,
-    AllergyLookupDescriptionsService,
-    AllergyHistoryViewerService
-  ],
-  // bootstrap: [AppComponent],  //Comment out when running build command for packaging
-  bootstrap: [], //Keep for prod build
-
-  entryComponents: [
-    AppComponent,
-    ConfirmationDialogComponent,
-    AllergyLookupDescriptionsComponent,
-    AllergyHistoryViewerComponent
-  ],
+    declarations: [
+        AppComponent,
+        ViewerComponent,
+        FakeDataContractComponent,
+        IdentifierTransformPipe,
+        AllergiesComponent,
+        ModuleLoaderDirective,
+        LinebreaksPipe,
+        ConfirmationDialogComponent,
+        AllergyLookupDescriptionsComponent,
+        AllergyHistoryViewerComponent,
+        AddAllergyComponent,
+        ListAllergyComponent,
+        EditAllergyComponent,
+    ],
+    imports: [
+        FormioModule,
+        ToastrModule.forRoot({
+            timeOut: 10000,
+            positionClass: "toast-bottom-right",
+            preventDuplicates: true,
+        }),
+        BrowserAnimationsModule,
+        NgxSpinnerModule,
+        DataTablesModule,
+        BrowserModule,
+        ModalModule.forRoot(),
+        HttpClientModule,
+        FormsModule,
+        NgbModule,
+        BsDatepickerModule.forRoot(),
+        PopoverModule.forRoot(),
+        AutoCompleteModule,
+        NgMultiSelectDropDownModule.forRoot(),
+        FontAwesomeModule,
+    ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    providers: [
+        BsModalRef,
+        BsModalService,
+        { provide: FormioAppConfig, useValue: AppConfig },
+        BsDatepickerConfig,
+        ConfirmationDialogService,
+        AllergyLookupDescriptionsService,
+        AllergyHistoryViewerService
+    ],
+    bootstrap: [],
+    entryComponents: [
+      AppComponent,
+      ConfirmationDialogComponent,
+      AllergyLookupDescriptionsComponent,
+      AllergyHistoryViewerComponent
+    ],
 })
 export class AppModule implements DoBootstrap {
   constructor(private injector: Injector) { }

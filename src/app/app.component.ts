@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@ import {
 import { BsModalService, BsModalRef } from "ngx-bootstrap/modal";
 import { Subscription } from "rxjs";
 import { environment } from "src/environments/environment";
-import { isArray } from "util";
 import {
   action,
   DataContract,
@@ -188,7 +187,7 @@ export class AppComponent implements OnInit {
       );
       if (decodedToken != null)
         this.appService.loggedInUserName = decodedToken.name
-          ? isArray(decodedToken.name)
+          ? Array.isArray(decodedToken.name)
             ? decodedToken.name[0]
             : decodedToken.name
           : decodedToken.IPUId;
@@ -300,7 +299,7 @@ export class AppComponent implements OnInit {
     let synapseroles;
     if (environment.production) synapseroles = decodedToken.SynapseRoles;
     else synapseroles = decodedToken.client_SynapseRoles;
-    if (!isArray(synapseroles)) {
+    if (!Array.isArray(synapseroles)) {
       condition = "rolename = @rolename";
       pm.filterparams.push(new filterparam("rolename", synapseroles));
     } else

@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ import { AllergyReportedByGroup } from '../models/entities/allergy-reported-by-g
 import { AllergyIntolerance } from '../models/entities/allergy-intolerance';
 import { Guid } from 'guid-typescript';
 import { SNOMED } from '../models/snomed-model';
-import { escapeRegExp } from '@angular/compiler/src/util';
+// import { escapeRegExp } from '@angular/compiler/src/util';
 import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-dialog.service';
 import { ToasterService } from '../services/toaster-service.service';
 import { SubjectsService } from '../services/subjects.service';
@@ -164,7 +164,8 @@ export class ListAllergyComponent {
     this.allergyIntolerance.enddate = null;
     this.allergyIntolerance.lastoccurencedate = this.allergyService.getDate();
 
-    this.allergyIntolerance.reportedbygroup = '[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]';
+    // this.allergyIntolerance.reportedbygroup = '[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]';
+    this.allergyIntolerance.reportedbygroup = '[ { "allergysources_id": "60df7d7e-5187-4105-97c0-689c2b8d2fbd", "source": "Patient - verbal" } ]';
     this.allergyIntolerance.reportedbyname = this.appService.currentPersonName;
     this.allergyIntolerance.reportedbydatetime = this.allergyService.getDateTime();
 
@@ -185,11 +186,40 @@ export class ListAllergyComponent {
       this.apiRequest.postRequest(this.postAllergyURI, this.allergyIntolerance)
         .subscribe((response) => {
 
-         this.toasterService.showToaster("Success","Not possible to ascertain recorded");
-         this.allergyService.resetAllergy();
           //Update patient banner
           this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
-         this.getAllergyListForPerson();
+          // this.toasterService.showToaster("Success","Not possible to ascertain recorded");
+          this.allergyService.resetAllergy();
+          this.getAllergyListForPerson();
+
+          if(this.allergyIntolerance.causativeagentcodesystem == "NON-ALLERGY" && this.allergyIntolerance.clinicalstatusvalue === "Active") {
+            this.allergyIntoleranceList.forEach( (element) => {
+  
+              if(element.causativeagentcodesystem == "NON-ALLERGY" && element.clinicalstatusvalue === "Active" ) {
+                //this.markAllergyInactive(element);
+                delete element['poaonly'];
+                delete element['poaname'];
+                element.reactionconcepts = JSON.stringify(element.reactionconcepts);
+                // element.reportedbygroup = JSON.stringify(element.reportedbygroup);
+  
+                element.clinicalstatusvalue = 'Inactive';
+                element.enddate = this.allergyService.getDate();
+  
+                //update the entity record
+                this.subscriptions.add(
+                  this.apiRequest.postRequest(this.postAllergyURI, element)
+                    .subscribe((response) => {
+                      //Update patient banner
+                      this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                      this.getAllergyListForPerson();
+                      // this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
+                    })
+                  )
+  
+              }
+            });
+  
+          }
 
         })
       )
@@ -434,7 +464,8 @@ export class ListAllergyComponent {
     this.allergyIntolerance.enddate = null;
     this.allergyIntolerance.lastoccurencedate = this.allergyService.getDate();
 
-    this.allergyIntolerance.reportedbygroup = '[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]';
+    // this.allergyIntolerance.reportedbygroup = '[ { "allergyreportedbygroup_id": "Patient", "groupname": "Patient" } ]';
+    this.allergyIntolerance.reportedbygroup = '[ { "allergysources_id": "60df7d7e-5187-4105-97c0-689c2b8d2fbd", "source": "Patient - verbal" } ]';
     this.allergyIntolerance.reportedbyname = this.appService.currentPersonName;
     this.allergyIntolerance.reportedbydatetime = this.allergyService.getDateTime();
 
@@ -455,11 +486,41 @@ export class ListAllergyComponent {
       this.apiRequest.postRequest(this.postAllergyURI, this.allergyIntolerance)
         .subscribe((response) => {
 
-         this.toasterService.showToaster("Success","No Allergies and Intolerances for patient recorded");
-         this.allergyService.resetAllergy();
          //Update patient banner
          this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+        //  this.toasterService.showToaster("Success","No Allergies and Intolerances for patient recorded");
+         this.allergyService.resetAllergy();
          this.getAllergyListForPerson();
+
+         
+         if(this.allergyIntolerance.causativeagentcodesystem == "NON-ALLERGY" && this.allergyIntolerance.clinicalstatusvalue === "Active") {
+          this.allergyIntoleranceList.forEach( (element) => {
+
+            if(element.causativeagentcodesystem == "NON-ALLERGY" && element.clinicalstatusvalue === "Active" ) {
+              //this.markAllergyInactive(element);
+              delete element['poaonly'];
+              delete element['poaname'];
+              element.reactionconcepts = JSON.stringify(element.reactionconcepts);
+              // element.reportedbygroup = JSON.stringify(element.reportedbygroup);
+
+              element.clinicalstatusvalue = 'Inactive';
+              element.enddate = this.allergyService.getDate();
+
+              //update the entity record
+              this.subscriptions.add(
+                this.apiRequest.postRequest(this.postAllergyURI, element)
+                  .subscribe((response) => {
+                    //Update patient banner
+                    this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                    this.getAllergyListForPerson();
+                    // this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
+                  })
+                )
+
+            }
+          });
+
+        }
 
         })
       )
@@ -498,6 +559,9 @@ export class ListAllergyComponent {
         .subscribe((response) => {
 
           this.saving = false;
+
+          //Update patient banner
+          this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
 
           this.getAllergyListForPerson();
 
@@ -548,10 +612,9 @@ export class ListAllergyComponent {
           this.saving = false;
           this.reverifyList = false;
 
-          this.getAllergyListForPerson();
-
           //Update patient banner
           this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+          this.getAllergyListForPerson();
 
           if(this.allergyIntoleranceListUpated.causativeagentcodesystem != "NON-ALLERGY" && this.allergyIntoleranceListUpated.clinicalstatusvalue === "Active") {
             this.allergyIntoleranceList.forEach( (element) => {
@@ -569,7 +632,7 @@ export class ListAllergyComponent {
                       //Update patient banner
                       this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
                       this.getAllergyListForPerson();
-                      this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
+                      // this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
                     })
                   )
 
@@ -616,7 +679,11 @@ export class ListAllergyComponent {
     if(!str) {
       return null;
     }
-    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    return str.replace(new RegExp(this.escapeRegex(find), 'g'), replace);
+  }
+
+  escapeRegex(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   }
 
 }

@@ -1,7 +1,7 @@
 <!--BEGIN LICENSE BLOCK--> 
 <!--Interneuron Terminus
 
-Copyright(C) 2021  Interneuron CIC
+Copyright(C) 2022  Interneuron CIC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -27,7 +27,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
           <div class="col-md-9">
             <h5>
               <span *ngIf="appService.blocked">
-                <fa name="lock" class="text-info"></fa> &nbsp;
+                <!-- <fa name="lock" class="text-info"></fa> -->
+                <i class="fa fa-lock text-info"></i> &nbsp;
               </span>
               Allergies and Intolerances
             </h5>
@@ -57,19 +58,28 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <div class="col-md-6">
                   <div *ngIf="NoKnownAllergiesRecorded && !ActiveNotAbleToAscertainRecorded" class="text-dark">
                     <small>
-                      <fa name="info-circle"></fa> 'No Known Allergies and Intolerances' recorded previously
+                      <!-- <fa name="info-circle"></fa> -->
+                      <i class="fa fa-info-circle" aria-hidden="true"></i> 'No Known Allergies and Intolerances' recorded previously
                     </small>
                   </div>
 
-                  <div *ngIf="!NoKnownAllergiesRecorded && !ActiveNotAbleToAscertainRecorded">
+                  <!-- <div *ngIf="!NoKnownAllergiesRecorded && !ActiveNotAbleToAscertainRecorded">
                     <button class="btn btn-info btn-block btn-sm text-white" (click)="recordNoKnownAllergies()">
-                      <fa name="plus"></fa> No known Allergies and Intolerances
+                      <fa name="plus"></fa> No known Allergies and Intolerances 123
+                    </button>
+                  </div> -->
+
+                  <div *ngIf="!NoKnownAllergiesRecorded">
+                    <button class="btn btn-info btn-block btn-sm text-white" (click)="recordNoKnownAllergies()">
+                      <!-- <fa name="plus"></fa> -->
+                      <i class="fa fa-plus" aria-hidden="true"></i> No known Allergies and Intolerances
                     </button>
                   </div>
 
                   <div *ngIf="ActiveNotAbleToAscertainRecorded" class="text-dark">
                     <small>
-                      <fa name="info-circle"></fa> Only 1 of 'No known allergies and intolerances' or 'Not possible to ascertain if any
+                      <!-- <fa name="info-circle"></fa> -->
+                      <i class="fa fa-info-circle" aria-hidden="true"></i> Only 1 of 'No known allergies and intolerances' or 'Not possible to ascertain if any
                       allergies and intolerances' can be active
                     </small>
                   </div>
@@ -81,19 +91,28 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <div class="col-md-6">
                   <div *ngIf="NotAbleToAscertainRecorded && !ActiveNoKnownAllergiesRecorded" class="text-dark">
                     <small>
-                      <fa name="info-circle"></fa> 'Not possible to ascertain if any allergies and Intolerances' recorded previously
+                      <!-- <fa name="info-circle"></fa> -->
+                      <i class="fa fa-info-circle" aria-hidden="true"></i> 'Not possible to ascertain if any allergies and Intolerances' recorded previously
                     </small>
                   </div>
 
-                  <div *ngIf="!NotAbleToAscertainRecorded && !ActiveNoKnownAllergiesRecorded">
+                  <!-- <div *ngIf="!NotAbleToAscertainRecorded && !ActiveNoKnownAllergiesRecorded">
                     <button class="btn btn-danger btn-block btn-sm text-white" (click)="recordNotAbleToVerify()">
-                      <fa name="plus"></fa> Not possible to ascertain if any allergies and Intolerances
+                      <fa name="plus"></fa> Not possible to ascertain if any allergies and Intolerances 456
+                    </button>
+                  </div> -->
+
+                  <div *ngIf="!NotAbleToAscertainRecorded">
+                    <button class="btn btn-danger btn-block btn-sm text-white" (click)="recordNotAbleToVerify()">
+                      <!-- <fa name="plus"></fa> -->
+                      <i class="fa fa-plus" aria-hidden="true"></i> Not possible to ascertain if any allergies and Intolerances
                     </button>
                   </div>
 
                   <div *ngIf="ActiveNoKnownAllergiesRecorded">
                     <small>
-                      <fa name="info-circle"></fa> Only 1 of 'No known allergies and Intolerances' or 'Not possible to ascertain if any
+                      <!-- <fa name="info-circle"></fa> -->
+                      <i class="fa fa-info-circle" aria-hidden="true"></i> Only 1 of 'No known allergies and Intolerances' or 'Not possible to ascertain if any
                       allergies and Intolerances' can be active
                     </small>
                   </div>
@@ -113,7 +132,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
 
                 <button class="btn btn-sm btn-info btn-block text-white float-right" (click)="addAllergy()"
                   *ngIf="!appService.blocked && appService.roleAccess('Add Allergy')">
-                  <fa name="plus"></fa> Add Allergy and Intolerance
+                  <!-- <fa name="plus"></fa> -->
+                  <i class="fa fa-plus" aria-hidden="true"></i> Add Allergy and Intolerance
                 </button>
 
 
@@ -155,10 +175,12 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                       <div *ngIf="opt.clinicalstatusvalue != 'Active'" class="border rounded bg-light"
                         style="padding: 5px; font-weight: bold;">
                         <span *ngIf="opt.causativeagentcodesystem == 'NON-ALLERGY'">
-                          <fa name="flag"></fa> &nbsp;
+                          <!-- <fa name="flag"></fa> -->
+                          <i class="fa fa-flag" aria-hidden="true"></i> &nbsp;
                         </span>
                         <span *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
-                          <fa name="exclamation-triangle"></fa> &nbsp;
+                          <!-- <fa name="exclamation-triangle"></fa> -->
+                          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> &nbsp;
                         </span>
                         {{opt.causativeagentdescription}}
                       </div>
@@ -168,10 +190,12 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                                   'border rounded bg-info text-white' : opt.causativeagentcodesystem != 'NON-ALLERGY'
                                 }" style="padding: 5px; font-weight: bold;">
                         <span *ngIf="opt.causativeagentcodesystem == 'NON-ALLERGY'">
-                          <fa name="flag"></fa> &nbsp;
+                          <!-- <fa name="flag"></fa> -->
+                          <i class="fa fa-flag" aria-hidden="true"></i> &nbsp;
                         </span>
                         <span *ngIf="opt.causativeagentcodesystem != 'NON-ALLERGY'">
-                          <fa name="exclamation-triangle"></fa> &nbsp;
+                          <!-- <fa name="exclamation-triangle"></fa> -->
+                          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> &nbsp;
                         </span>
                         {{opt.causativeagentdescription}}
                       </div>
@@ -268,7 +292,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
           <div class="row">
             <div class="col-md-1">
               <h3>
-                <fa name="info-circle"></fa>
+                <!-- <fa name="info-circle"></fa> -->
+                <i class="fa fa-info-circle" aria-hidden="true"></i>
               </h3>
             </div>
             <div class="col-md-11">
@@ -288,7 +313,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
         <div class="row">
           <div class="col-md-6">
             <button class="btn btn-secondary btn-sm text-white" (click)="cancel()">
-              <fa name="arrow-left"></fa> Return to main menu
+              <!-- <fa name="arrow-left"></fa> -->
+              <i class="fa fa-arrow-left"></i> Return to main menu
             </button>
           </div>
           <div class="col-md-6">

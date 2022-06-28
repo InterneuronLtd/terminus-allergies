@@ -18,7 +18,11 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.If not, see<http://www.gnu.org/licenses/>.
 //END LICENSE BLOCK 
-export interface KeyValuePair {
-    key: string;
-    value: string;
+import { EntityBase } from "./entity-base.model";
+
+export interface AllergySources{
+  allergysources_id: string;
+	source: string;
+	description: string;
+	displayname: string;
 }

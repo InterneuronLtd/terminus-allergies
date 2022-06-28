@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 //You should have received a copy of the GNU General Public License
 //along with this program.If not, see<http://www.gnu.org/licenses/>.
 //END LICENSE BLOCK 
-import { escapeRegExp } from '@angular/compiler/src/util';
+// import { escapeRegExp } from '@angular/compiler/src/util';
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { Subscription } from 'rxjs';
@@ -40,6 +40,7 @@ import { SubjectsService } from '../services/subjects.service';
 import { TerminologyConcept } from '../models/terminology-concept';
 import { AllergyLookupDescriptionsService } from '../allergy-lookup-descriptions/allergy-lookup-descriptions.service';
 import { AllergiesService } from '../services/allergies.service';
+import { AllergySources } from '../models/entities/allergy-source';
 @Component({
   selector: 'app-edit-allergy',
   templateUrl: './edit-allergy.component.html',
@@ -59,6 +60,7 @@ export class EditAllergyComponent {
   criticalityList: AllergyCriticality[];
   verificationStatusList: AllergyVerificationStatus[];
   reportedByGroupList: AllergyReportedByGroup[];
+  sourceList: AllergySources[];
 
   showAllergyReactions: boolean;
 
@@ -104,6 +106,7 @@ export class EditAllergyComponent {
   getReportedByGroupListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyreportedbygroup&orderby=displayorder ASC";
   getAllergyURI: string = this.appService.baseURI + "/GetObject?synapsenamespace=core&synapseentityname=allergyintolerance&id=";
   postAllergyURI: string = this.appService.baseURI + "/PostObject?synapsenamespace=core&synapseentityname=allergyintolerance";
+  getSourceListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergysources&orderby=displayname ASC";
 
   @Output() viewChange: EventEmitter<any> = new EventEmitter();
 
@@ -124,10 +127,20 @@ export class EditAllergyComponent {
     this.addAllergyStep = 1
     this.showAllergyReactions = true;
 
+    // this.dropdownSettings = {
+    //   singleSelection: false,
+    //   idField: 'allergyreportedbygroup_id',
+    //   textField: 'groupname',
+    //   selectAllText: 'Select All',
+    //   unSelectAllText: 'UnSelect All',
+    //   itemsShowLimit: 10,
+    //   allowSearchFilter: true
+    // };
+
     this.dropdownSettings = {
       singleSelection: false,
-      idField: 'allergyreportedbygroup_id',
-      textField: 'groupname',
+      idField: 'allergysources_id',
+      textField: 'source',
       selectAllText: 'Select All',
       unSelectAllText: 'UnSelect All',
       itemsShowLimit: 10,
@@ -164,7 +177,8 @@ export class EditAllergyComponent {
     await this.getClinicalStatusList();
     await this.getCriticalityList();
     await this.getVerificationStatusList();
-    await this.getReportedByList();
+    // await this.getReportedByList();
+    await this.getSourceList();
   }
 
   async  getAllergyListForPerson() {
@@ -173,22 +187,28 @@ export class EditAllergyComponent {
      this.apiRequest.getRequest(this.getAllergyListForPersonURI)
      .subscribe((response) => {
        this.allergyIntoleranceList = JSON.parse(response);
-
        this.refreshingList = false;
      })
    )
   }
 
   get activeAllergies(): AllergyWithMeta[] {
+    if(this.allergyIntoleranceList != undefined)
+    {
       return this.allergyIntoleranceList.filter((a) =>
         a.clinicalstatusvalue == 'Active' && a.causativeagentcodesystem != "NON-ALLERGY"
       );
+    }
   }
 
   get activeAllergiesAndFlags(): AllergyWithMeta[] {
-    return this.allergyIntoleranceList.filter((a) =>
-      a.clinicalstatusvalue == 'Active' && a.causativeagentcode != this.allergyIntolerance.causativeagentcode
-    );
+    
+    if(this.allergyIntoleranceList != undefined)
+    {
+      return this.allergyIntoleranceList.filter((a) =>
+        a.clinicalstatusvalue == 'Active' && a.causativeagentcode != this.allergyIntolerance.causativeagentcode
+      );
+    }
   }
 
   get NoKnownAllergiesRecorded(): boolean{
@@ -198,7 +218,7 @@ export class EditAllergyComponent {
     }
 
     var filter = this.allergyIntoleranceList.filter((a) =>
-      a.causativeagentcode == 'No known allergies' && a.causativeagentcodesystem == "NON-ALLERGY"
+      a.causativeagentcode == 'No known allergies and intolerances' && a.causativeagentcodesystem == "NON-ALLERGY"
     );
 
     if(!filter) {
@@ -220,7 +240,7 @@ export class EditAllergyComponent {
     }
 
     var filter = this.allergyIntoleranceList.filter((a) =>
-      a.clinicalstatusvalue == 'Active' && a.causativeagentcode == 'No known allergies' && a.causativeagentcodesystem == "NON-ALLERGY"
+      a.clinicalstatusvalue == 'Active' && a.causativeagentcode == 'No known allergies and intolerances' && a.causativeagentcodesystem == "NON-ALLERGY"
     );
 
     if(!filter) {
@@ -242,7 +262,7 @@ export class EditAllergyComponent {
     }
 
     var filter = this.allergyIntoleranceList.filter((a) =>
-      a.causativeagentcode == 'Not possible to ascertain if patient has any allergies' && a.causativeagentcodesystem == "NON-ALLERGY"
+      a.causativeagentcode == 'Not possible to ascertain if patient has any allergies and intolerances' && a.causativeagentcodesystem == "NON-ALLERGY"
     );
 
     if(!filter) {
@@ -264,7 +284,7 @@ export class EditAllergyComponent {
     }
 
     var filter = this.allergyIntoleranceList.filter((a) =>
-    a.clinicalstatusvalue == 'Active' && a.causativeagentcode == 'Not possible to ascertain if patient has any allergies' && a.causativeagentcodesystem == "NON-ALLERGY"
+    a.clinicalstatusvalue == 'Active' && a.causativeagentcode == 'Not possible to ascertain if patient has any allergies and intolerances' && a.causativeagentcodesystem == "NON-ALLERGY"
     );
 
     if(!filter) {
@@ -288,11 +308,20 @@ export class EditAllergyComponent {
    )
   }
 
-  async  getReportedByList() {
+  // async  getReportedByList() {
+  //   await this.subscriptions.add(
+  //    this.apiRequest.getRequest(this.getReportedByGroupListURI)
+  //    .subscribe((response) => {
+  //      this.reportedByGroupList = JSON.parse(response);
+  //    })
+  //  )
+  // }
+
+  async  getSourceList() {
     await this.subscriptions.add(
-     this.apiRequest.getRequest(this.getReportedByGroupListURI)
+     this.apiRequest.getRequest(this.getSourceListURI)
      .subscribe((response) => {
-       this.reportedByGroupList = JSON.parse(response);
+       this.sourceList = JSON.parse(response);
      })
    )
   }
@@ -338,7 +367,7 @@ export class EditAllergyComponent {
       .subscribe((response) => {
         this.allergyIntolerance = JSON.parse(response);
 
-        this.getCriticalityList();
+        // this.getCriticalityList();
 
         if(this.allergyIntolerance.reportedbygroup != '') {
           this.allergyIntolerance.reportedbygroup = JSON.parse(this.allergyIntolerance.reportedbygroup);
@@ -403,6 +432,8 @@ export class EditAllergyComponent {
       this.allergyIntolerance.reactionconcepts = this.replaceAll(this.allergyIntolerance.reactionconcepts, '_code', 'code');
       this.allergyIntolerance.reactionconcepts = JSON.parse(this.allergyIntolerance.reactionconcepts) as SNOMED[];
 
+      this.allergyIntolerance.criticality = this.allergyIntolerance.criticality;
+
       this.selectedAllergiesView = "edit";
 
       this.showAllergyReactions = true;
@@ -442,7 +473,7 @@ export class EditAllergyComponent {
     if(!str) {
       return null;
     }
-    return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
+    return str.replace(new RegExp(this.escapeRegex(find), 'g'), replace);
   }
 
   get existingAllergies(): AllergyWithMeta[] {
@@ -597,7 +628,11 @@ export class EditAllergyComponent {
     this.showAllergyReactions = false;
     //Convert any dates
     updatedData.onsetdate = updatedData.onsetdate as Date;
-    updatedData.enddate = updatedData.enddate as Date;
+    if(updatedData.enddate)
+    { 
+      updatedData.enddate = this.allergyService.getDateTimeinISOFormat(updatedData.enddate);
+    }
+    
     updatedData.lastoccurencedate = updatedData.lastoccurencedate as Date;
 
     //Convert concepts to strings
@@ -612,7 +647,6 @@ export class EditAllergyComponent {
     {
       updatedData.manifestationnotes = updatedData.manifestationnotes.trim();
     }
-    
 
     //update the entity record
     await this.subscriptions.add(
@@ -621,19 +655,20 @@ export class EditAllergyComponent {
 
           this.saving = false;
 
-          this.toasterService.showToaster("Success","Allergy Saved");
-
-          this.getAllergyListForPerson();
-
           //Update patient banner
           this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+          // this.toasterService.showToaster("Success","Allergy Saved");   
+          this.getAllergyListForPerson();
 
-          if(this.allergyIntolerance.causativeagentcodesystem != "NON-ALLERGY" && this.allergyIntolerance.clinicalstatusvalue === "Active") {
+          if(updatedData.causativeagentcodesystem != "NON-ALLERGY" && updatedData.clinicalstatusvalue === "Active") {
             this.allergyIntoleranceList.forEach( (element) => {
-
               if(element.causativeagentcodesystem == "NON-ALLERGY" && element.clinicalstatusvalue === "Active" ) {
                 //this.markAllergyInactive(element);
 
+                delete element['poaonly'];
+                delete element['poaname'];
+                element.reportedbygroup = JSON.parse(element.reportedbygroup);
+                element.reportedbygroup = JSON.stringify(element.reportedbygroup);
                 element.clinicalstatusvalue = 'Inactive';
                 element.enddate = this.allergyService.getDate();
 
@@ -643,8 +678,9 @@ export class EditAllergyComponent {
                     .subscribe((response) => {
                       //Update patient banner
                       this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                      // this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
                       this.getAllergyListForPerson();
-                      this.toasterService.showToaster("Info", element.causativeagentdescription + ' set to inactive');
+                      
                     })
                   )
 
@@ -763,7 +799,11 @@ unSelectReactionValue(event) {
   }
 
   endDateToday() {
-    this.allergyIntolerance.enddate = new Date (this.allergyService.getDate() as Date);
+    this.allergyIntolerance.enddate = new Date(this.allergyService.getDate() as Date);
+  }
+
+  escapeRegex(string) {
+    return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
   }
 
 }

@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2021  Interneuron CIC
+//Copyright(C) 2022  Interneuron CIC
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ export interface AllergyIntolerance extends EntityBase{
 	category: string;
 	criticality: string;
 	onsetdate: Date;
-	enddate: Date;
+	enddate: any;
 	lastoccurencedate: Date;
 	reportedbygroup: string;
 	reportedbyname: string;

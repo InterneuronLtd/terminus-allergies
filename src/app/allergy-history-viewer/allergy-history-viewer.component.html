@@ -1,7 +1,7 @@
 <!--BEGIN LICENSE BLOCK--> 
 <!--Interneuron Terminus
 
-Copyright(C) 2021  Interneuron CIC
+Copyright(C) 2022  Interneuron CIC
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
 <!--END LICENSE BLOCK--> 
 <div class="modal-header bg-info text-white">
   <h5 class="modal-title">
-    <fa name="check-square"></fa> Allergy and Intolerance Audit History({{allergenName}})
+    <!-- <fa name="check-square"></fa> -->
+    <i class="fa fa-check-square-o" aria-hidden="true"></i> Allergy and Intolerance Audit History({{allergenName}})
     <!-- - {{ title }} -->
   </h5>
 
@@ -38,7 +39,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
           <div class="row">
             <div class="col-md-2">
               <button class="btn btn-info text-white" (click)="backToList()">
-                <fa name="chevron-left"></fa> Back
+                <!-- <fa name="chevron-left"></fa> -->
+                <i class="fa fa-chevron-left"></i> Back
               </button>
             </div>
             <div class="col-md-5">
@@ -74,7 +76,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
               </div> -->
                 <div class="col-md-1" style="padding-top:2px;">
                   <span class="float-right text-dark">
-                    <fa name="arrow-right"></fa>
+                    <!-- <fa name="arrow-right"></fa> -->
+                    <i class="fa fa-arrow-right"></i>
                   </span>
                 </div>
               </div>
@@ -112,10 +115,12 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
               <div *ngIf="allergyIntolerance.clinicalstatusvalue != 'Active'"
                 class="border rounded bg-light text-secondary" style="padding: 5px; font-weight: bold;">
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
-                  <fa name="flag"></fa> &nbsp;
+                  <!-- <fa name="flag"></fa> -->
+                  <i class="fa fa-flag" aria-hidden="true"></i> &nbsp;
                 </span>
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
-                  <fa name="exclamation-triangle"></fa> &nbsp;
+                  <!-- <fa name="exclamation-triangle"></fa> -->
+                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> &nbsp;
                 </span>
                 <span
                   *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
@@ -130,10 +135,12 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                                   'border rounded bg-info text-white' : allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'
                                 }" style="padding: 5px; font-weight: bold;">
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem == 'NON-ALLERGY'">
-                  <fa name="flag"></fa> &nbsp;
+                  <!-- <fa name="flag"></fa> -->
+                  <i class="fa fa-flag" aria-hidden="true"></i> &nbsp;
                 </span>
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">
-                  <fa name="exclamation-triangle"></fa> &nbsp;
+                  <!-- <fa name="exclamation-triangle"></fa> -->
+                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> &nbsp;
                 </span>
                 <span
                   *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
@@ -157,7 +164,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                       <div class="row">
                         <div class="col-md-12">
                           <h6>
-                            <fa name="circle" class="text-warning"></fa> {{opt.term}} 
+                            <!-- <fa name="circle" class="text-warning"></fa> -->
+                            <i class="fa fa-circle"></i> {{opt.term}} 
                             <!-- <span
                               *ngIf="opt.code != '74964007'">(SNOMED
                               CT: {{opt.code}})</span> -->
@@ -196,7 +204,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   <div class="form-group">
                     <label for="clinicalstatusvalue"><span class="text-secondary"
                         style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('status')">
-                        <fa name="info-circle"></fa>
+                        <!-- <fa name="info-circle"></fa> -->
+                        <i class="fa fa-info-circle" aria-hidden="true"></i>
                       </span>
                       Status:</label>
                     <select name="clinicalstatusvalue" id="clinicalstatusvalue" class="form-control" disabled
@@ -216,7 +225,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <div class="form-group">
                           <label for="category"> <span class="text-secondary" style="cursor: pointer; font-size: 0.7em;"
                               (click)="viewDescription('categories')">
-                              <fa name="info-circle"></fa>
+                              <!-- <fa name="info-circle"></fa> -->
+                              <i class="fa fa-info-circle" aria-hidden="true"></i>
                             </span> Category:
                           </label>
                           <select name="category" id="category" class="form-control" disabled
@@ -237,7 +247,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <div class="form-group">
                           <label for="criticality"><span class="text-secondary"
                               style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('criticality')">
-                              <fa name="info-circle"></fa>
+                              <!-- <fa name="info-circle"></fa> -->
+                              <i class="fa fa-info-circle" aria-hidden="true"></i>
                             </span>
                             Severity / criticality:</label>
                           <select name="criticality" id="criticality" class="form-control" disabled
@@ -347,7 +358,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                       <div class="form-group">
                         <label for="verificationstatus"> <span class="text-secondary"
                             style="cursor: pointer; font-size: 0.7em;" (click)="viewDescription('verification')">
-                            <fa name="info-circle"></fa>
+                            <!-- <fa name="info-circle"></fa> -->
+                            <i class="fa fa-info-circle" aria-hidden="true"></i>
                           </span>
                           Verification Status:</label>
                         <select name="verificationstatus" id="verificationstatus" class="form-control" disabled
@@ -418,7 +430,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
       <hr />
 
       <button class="btn btn-info text-white" (click)="backToList()">
-        <fa name="chevron-left"></fa> Back
+        <!-- <fa name="chevron-left"></fa> -->
+        <i class="fa fa-chevron-left"></i> Back
       </button>
 
     </div>
