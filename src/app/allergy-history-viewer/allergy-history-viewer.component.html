@@ -1,27 +1,7 @@
-<!--BEGIN LICENSE BLOCK--> 
-<!--Interneuron Terminus
-
-Copyright(C) 2023  Interneuron Holdings Ltd
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.If not, see<http://www.gnu.org/licenses/>. -->
-<!--END LICENSE BLOCK--> 
 <div class="modal-header bg-info text-white">
   <h5 class="modal-title">
     <!-- <fa name="check-square"></fa> -->
-    <i class="fa fa-check-square-o" aria-hidden="true"></i> Allergy and Intolerance Audit History({{allergenName}})
+    <i class="fa fa-check-square-o" aria-hidden="true"></i> Allergy and Intolerance Audit History ({{allergenName}})
     <!-- - {{ title }} -->
   </h5>
 
@@ -45,7 +25,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
             </div>
             <div class="col-md-5">
               <strong>Timestamp</strong><br />
-              {{allergyIntolerance.lastupdatedrecorddatetime | date:'dd/MM/yyyy HH:mm'}}
+              <!-- {{allergyIntolerance.lastupdatedrecorddatetime | date:'dd/MM/yyyy HH:mm'}} -->
+              {{allergyIntolerance.lastupdatedrecorddt | date:'dd/MM/yyyy HH:mm'}}
             </div>
             <div class="col-md-5">
               <strong>User</strong><br />
@@ -64,7 +45,8 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
             <div style="padding:5px;">
               <div class="row">
                 <div class="col-md-6">
-                  {{opt.lastupdatedrecorddatetime | date:'dd/MM/yyyy HH:mm'}}
+                  <!-- {{opt.lastupdatedrecorddatetime | date:'dd/MM/yyyy HH:mm'}} -->
+                  {{opt.lastupdatedrecorddt | date:'dd/MM/yyyy HH:mm'}}
                 </div>
                 <div class="col-md-5">
                   <span *ngIf="opt._createdby"> {{ opt._createdby }} </span>
@@ -126,7 +108,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
 
               <div *ngIf="allergyIntolerance.clinicalstatusvalue == 'Active'" [ngClass]="{
@@ -146,7 +128,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
             </div>
 
@@ -330,7 +312,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                       <div class="form-group">
                         <label for="reportedbygroup">Source:</label>
                         <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
-                          disabled="true" [data]="" name="reportedbygroup" id="reportedbygroup"
+                          disabled="true" [data]="sourceList" name="reportedbygroup" id="reportedbygroup"
                           [(ngModel)]="allergyIntolerance.reportedbygroup" (onSelect)="onItemSelect($event)"
                           (onSelectAll)="onSelectAll($event)">
                         </ng-multiselect-dropdown>
@@ -378,7 +360,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Verified By:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;">
                           {{allergyIntolerance.assertedby}} at
-                          {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.asserteddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                     <div class="col-md-2">
@@ -398,7 +382,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Documented by:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;">
                           {{allergyIntolerance.recordedby}} at
-                          {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.recordeddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                   </div>

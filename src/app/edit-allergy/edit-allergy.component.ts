@@ -1,23 +1,3 @@
-//BEGIN LICENSE BLOCK 
-//Interneuron Terminus
-
-//Copyright(C) 2023  Interneuron Holdings Ltd
-
-//This program is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, either version 3 of the License, or
-//(at your option) any later version.
-
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-//See the
-//GNU General Public License for more details.
-
-//You should have received a copy of the GNU General Public License
-//along with this program.If not, see<http://www.gnu.org/licenses/>.
-//END LICENSE BLOCK 
 // import { escapeRegExp } from '@angular/compiler/src/util';
 import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
@@ -41,6 +21,8 @@ import { TerminologyConcept } from '../models/terminology-concept';
 import { AllergyLookupDescriptionsService } from '../allergy-lookup-descriptions/allergy-lookup-descriptions.service';
 import { AllergiesService } from '../services/allergies.service';
 import { AllergySources } from '../models/entities/allergy-source';
+import { AudienceType, NotificationClientContext, publishSenderNotificationWithParams } from '../notification/lib/notification.observable.util';
+import * as moment from 'moment';
 @Component({
   selector: 'app-edit-allergy',
   templateUrl: './edit-allergy.component.html',
@@ -66,6 +48,8 @@ export class EditAllergyComponent {
 
   maxDateValue: Date = new Date();
 
+  minDateValue: Date;
+
   saving: boolean = false;
 
   refreshingList: boolean;
@@ -85,6 +69,8 @@ export class EditAllergyComponent {
   reverifyFlag: boolean = false;
 
   cloneAllergyData:any;
+
+  disableDropdown: boolean = false;
 
   //Multiselect
   dropdownList = [];
@@ -322,6 +308,15 @@ export class EditAllergyComponent {
      this.apiRequest.getRequest(this.getSourceListURI)
      .subscribe((response) => {
        this.sourceList = JSON.parse(response);
+
+       this.sourceList.forEach((element) => {
+        if(element.displayname == 'GP connect'){
+          element.isDisabled = true;
+        }
+        else{
+          element.isDisabled = false;
+        }
+       })
      })
    )
   }
@@ -335,11 +330,17 @@ export class EditAllergyComponent {
    )
   }
 
-  async  getCriticalityList() {
+  async  getCriticalityList(event?: any) {
     await this.subscriptions.add(
      this.apiRequest.getRequest(this.getCriticalityListURI)
      .subscribe((response) => {
        this.criticalityList = JSON.parse(response);
+       if (typeof event !== 'undefined') {
+        if(event.target.value != 'Sensitivity Intolerance')
+        {
+          this.allergyIntolerance.criticality = "Life Threatening";
+        }
+      }
      })
    )
   }
@@ -348,7 +349,13 @@ export class EditAllergyComponent {
     await this.subscriptions.add(
      this.apiRequest.getRequest(this.getVerificationStatusListURI)
      .subscribe((response) => {
-       this.verificationStatusList = JSON.parse(response);
+       //this.verificationStatusList = JSON.parse(response);
+       let verificationStatuses = JSON.parse(response);
+       let result = verificationStatuses.findIndex(x => x.allergyverificationstatus_id == 'Refuted');
+      if(result != -1){
+        verificationStatuses.splice(result,1);
+        this.verificationStatusList = verificationStatuses;
+      }
      })
    )
   }
@@ -370,7 +377,15 @@ export class EditAllergyComponent {
         // this.getCriticalityList();
 
         if(this.allergyIntolerance.reportedbygroup != '') {
-          this.allergyIntolerance.reportedbygroup = JSON.parse(this.allergyIntolerance.reportedbygroup);
+          if(this.allergyIntolerance.reportedbygroup.includes("GP connect")){
+            this.disableDropdown = true;
+          }
+          else{
+            this.disableDropdown = false;
+          }
+          this.ParseJSONStringToObject(this.allergyIntolerance.reportedbygroup);
+          
+          
         } else {
           this.allergyIntolerance.reportedbygroup = JSON.parse('[]');
         }
@@ -434,6 +449,9 @@ export class EditAllergyComponent {
 
       this.allergyIntolerance.criticality = this.allergyIntolerance.criticality;
 
+      //this.allergyIntolerance.asserteddatetime =  new Date(this.allergyIntolerance.asserteddatetime).toISOString(); 
+      //this.allergyIntolerance.recordeddatetime =  new Date(this.allergyIntolerance.recordeddatetime).toISOString(); 
+
       this.selectedAllergiesView = "edit";
 
       this.showAllergyReactions = true;
@@ -449,6 +467,8 @@ export class EditAllergyComponent {
             }
           }
         }, 1000);
+
+        this.minDateValue = new Date(this.allergyIntolerance.recordeddt);
 
         this.cloneAllergyData = Object.assign({}, this.allergyIntolerance);
        
@@ -537,6 +557,7 @@ export class EditAllergyComponent {
     }
     this.allergyIntolerance.assertedby = this.appService.loggedInUserName;
     this.allergyIntolerance.asserteddatetime = this.allergyService.getDateTime();
+    this.allergyIntolerance.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     this.reverifyFlag = true;
     this.toasterService.showToaster('info', "Reverified - will be actioned on save");
   }
@@ -565,7 +586,7 @@ export class EditAllergyComponent {
 
   onCategoryChange(event)
   {
-    
+    this.allergyIntolerance.criticality = '';
     if(event.target.value == 'Sensitivity Intolerance')
     {
       let criticality = this.criticalityList;
@@ -573,11 +594,11 @@ export class EditAllergyComponent {
       if(result != -1){
         criticality.splice(result,1);
         this.criticalityList = criticality;
+        this.allergyIntolerance.criticality = "Non-Life Threatening";
       }
-      this.allergyIntolerance.criticality = '';
     }
     else{
-      this.getCriticalityList();
+      this.getCriticalityList(event);
     }
   }
 
@@ -609,19 +630,23 @@ export class EditAllergyComponent {
     // if(updatedData.verificationstatus != this.oldVerificationStatus) {
       updatedData.assertedby = this.appService.loggedInUserName;
       updatedData.asserteddatetime = this.allergyService.getDateTime();
+      updatedData.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     // }
 
     if(updatedData.reportedbyname != this.oldreportedbyname) {
       updatedData.reportedbydatetime = this.allergyService.getDateTime();
+      updatedData.reportedbydt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     }
 
     if(updatedData.reportedbygroup != this.oldreportedbygroup) {
       updatedData.reportedbydatetime = this.allergyService.getDateTime();
+      updatedData.reportedbydt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     }
 
     if(!this.reverifyFlag)
     {
       updatedData.recordeddatetime = this.allergyService.getDateTime();
+      updatedData.recordeddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     }
     
 
@@ -639,10 +664,18 @@ export class EditAllergyComponent {
     // this.saving = true;
 
     updatedData.allergyconcept = JSON.stringify(updatedData.allergyconcept);
-    updatedData.reactionconcepts = JSON.stringify(updatedData.reactionconcepts);
+  
+    if(updatedData.reactionconcepts.length == 0){
+      updatedData.reactionconcepts = '[{"term": "Not recorded", "code": "1220561009", "bindingValue": "1220561009 | Not recorded", "fsn": "Not recorded (qualifier value)", "level": 0, "parentCode": null}]';
+    }
+    else{
+      updatedData.reactionconcepts = JSON.stringify(updatedData.reactionconcepts);
+    }
+    
     updatedData.reportedbygroup = JSON.stringify(updatedData.reportedbygroup);
-    updatedData.allergyconcept = JSON.stringify(updatedData.reactionconcepts);
+    updatedData.reactiontext = JSON.stringify(updatedData.reactionconcepts);
     updatedData.lastupdatedrecorddatetime = this.allergyService.getDateTime();
+    updatedData.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     if(updatedData.manifestationnotes)
     {
       updatedData.manifestationnotes = updatedData.manifestationnotes.trim();
@@ -659,6 +692,10 @@ export class EditAllergyComponent {
           this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
           // this.toasterService.showToaster("Success","Allergy Saved");   
           this.getAllergyListForPerson();
+
+          if(this.appService.appConfig.appsettings.can_send_notification) {
+            publishSenderNotificationWithParams('ALLERGIES_EDITED', null, null, AudienceType.ALL_SESSIONS_EXCEPT_CURRENT_SESSION, null, true, null, 'allergies_edited_notif_msg');
+          }
 
           if(updatedData.causativeagentcodesystem != "NON-ALLERGY" && updatedData.clinicalstatusvalue === "Active") {
             this.allergyIntoleranceList.forEach( (element) => {
@@ -804,6 +841,13 @@ unSelectReactionValue(event) {
 
   escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
+
+  ParseJSONStringToObject(reportedbygroup){
+    if(typeof reportedbygroup == 'string'){
+      this.allergyIntolerance.reportedbygroup = JSON.parse(this.allergyIntolerance.reportedbygroup);
+      this.ParseJSONStringToObject(this.allergyIntolerance.reportedbygroup);
+    }
   }
 
 }

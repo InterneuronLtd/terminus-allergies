@@ -1,27 +1,9 @@
-<!--BEGIN LICENSE BLOCK--> 
-<!--Interneuron Terminus
-
-Copyright(C) 2023  Interneuron Holdings Ltd
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.If not, see<http://www.gnu.org/licenses/>. -->
-<!--END LICENSE BLOCK--> 
 <div *ngIf="selectedAllergiesView === 'edit'">
   <form  #editAllergyForm="ngForm">
+    <!-- <button class="btn btn-info text-white" (click)="cancelEditingAllergy()"
+    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reactionconcepts?.length == 0 || allergyIntolerance?.reportedbygroup?.length == 0"> -->
     <button class="btn btn-info text-white" (click)="cancelEditingAllergy()"
-    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reactionconcepts?.length == 0 || allergyIntolerance?.reportedbygroup?.length == 0">
+    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reportedbygroup?.length == 0">
       <!-- <fa name="arrow-left"></fa> -->
       <i class="fa fa-arrow-left"></i> Back
     </button>
@@ -77,7 +59,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
 
               <div *ngIf="allergyIntolerance.clinicalstatusvalue == 'Active'" [ngClass]="{
@@ -96,7 +78,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
             </div>
 
@@ -126,7 +108,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   [inputStyle]="{'width':'100%'}" (completeMethod)="searchReactions($event)" [multiple]="true"
                   (onSelect)="selectReactionValue($event)" (onUnselect)="unSelectReactionValue($event)" [minLength]="3"
                   delay="1000" #autocomplete [(ngModel)]="allergyIntolerance.reactionconcepts" field="term"
-                  [ngClass]="{ 'is-invalid': allergyIntolerance.reactionconcepts?.length == '0' }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                  [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
                   <ng-template let-reaction pTemplate="item">
                     <div class="ui-helper-clearfix" style="border-bottom:1px solid #D5D5D5">
                       <div style="font-size:14px;margin:10px 10px 0 0">
@@ -141,9 +123,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                     </div>
                   </ng-template>
                 </p-autoComplete>
-                <div [hidden]="allergyIntolerance.reactionconcepts?.length > 0" class="text-danger">
+                <!-- <div [hidden]="allergyIntolerance.reactionconcepts?.length > 0" class="text-danger">
                   <i>Please add at least one reaction, you can add an uncoded reaction if required.</i>
-                </div>
+                </div> -->
 
 
                 <div style="margin-top: 7px;" *ngIf="showAllergyReactions">
@@ -176,9 +158,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                     [(ngModel)]="allergyIntolerance.manifestationnotes" #manifestationnotes="ngModel" rows="3"
                     [ngClass]="{ 'is-invalid': manifestationnotes.invalid }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"></textarea>
 
-                  <div [hidden]="manifestationnotes.valid || !appService.roleAccess('Edit Allergy') || (!appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                  <!-- <div [hidden]="manifestationnotes.valid || !appService.roleAccess('Edit Allergy') || (!appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
                     <i>Reaction notes is required</i>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -233,16 +215,16 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                             [(ngModel)]="allergyIntolerance.category" required #category="ngModel"
                             [ngClass]="{ 'is-invalid': category.invalid }" (change)="onCategoryChange($event)"
                             [disabled]="(!appService.roleAccess('Edit Allergy') ) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
-                            <option value="">Please Select</option>
+                            <!-- <option value="">Please Select</option> -->
                             <option *ngFor="let opt of categoryList" value="{{ opt.allergycategory_id }}">
                               {{ opt.allergycategory }}
                             </option>
                             <!-- <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option> -->
                           </select>
-                          <div [hidden]="category.valid || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
+                          <!-- <div [hidden]="category.valid || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
                             <i>Category is required</i>
-                          </div>
+                          </div> -->
                         </div>
                       </div>
 
@@ -260,16 +242,16 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                           <select name="criticality" id="criticality" class="form-control"
                             [(ngModel)]="allergyIntolerance.criticality" required #criticality="ngModel"
                             [ngClass]="{ 'is-invalid': criticality.invalid }" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
-                            <option value="">Please Select</option>
+                            <!-- <option value="">Please Select</option> -->
                             <option *ngFor="let opt of criticalityList" value="{{ opt.allergycriticality_id }}">
                               {{ opt.criticality }}
                             </option>
                             <!-- <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option> -->
                           </select>
-                          <div [hidden]="allergyIntolerance.criticality" class="text-danger">
+                          <!-- <div [hidden]="criticality.valid" class="text-danger">
                             <i>Severity /criticality is required</i>
-                          </div>
+                          </div> -->
                         </div>
                       </div>
 
@@ -278,7 +260,27 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
 
                   <div class="row">
                     <div class="col-md-4">
-
+                      <div class="form-group">
+                        <label for="reportedbygroup">Source:</label>
+                        <!-- <select name="reportedbygroup" id="reportedbygroup" class="form-control"
+                          [(ngModel)]="allergyIntolerance.reportedbygroup" required #reportedbygroup="ngModel">
+                          <option *ngFor="let opt of getReportedByList" value="{{ opt.allergyreportedbygroup_id }}">
+                            {{ opt.groupname }}
+                          </option>
+                        </select>
+                        <div [hidden]="reportedbygroup.valid" class="text-danger">
+                          <i>Reported by is required</i>
+                        </div> -->
+                        <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
+                          *ngIf="!saving" [data]="sourceList" name="reportedbygroup" id="reportedbygroup"
+                          [(ngModel)]="allergyIntolerance.reportedbygroup" (onSelect)="onItemSelect($event)"
+                          (onSelectAll)="onSelectAll($event)" [disabled]="((!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)) || disableDropdown"
+                          [ngClass]="{ 'is-invalid': allergyIntolerance.reportedbygroup?.length > 0}">
+                        </ng-multiselect-dropdown>
+                        <div [hidden]="allergyIntolerance.reportedbygroup?.length > 0" class="text-danger">
+                          <i>Please select atleast 1 value</i>
+                        </div>
+                      </div>
                       <!-- <div class="form-group">
                         <label for="onsetdate">Onset:</label>
                         <div class="input-group">
@@ -303,7 +305,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                           <label for="enddate">End date:</label>
                           <div class="input-group">
                             <input class="form-control" type="text" style="width:8em;" placeholder="DD/MM/YYYY"
-                              [maxDate]="maxDateValue" bsDatepicker id="enddate" name="enddate" #enddate="ngModel"
+                              [maxDate]="maxDateValue" [minDate]="minDateValue" bsDatepicker id="enddate" name="enddate" #enddate="ngModel"
                               [(ngModel)]="allergyIntolerance.enddate" [bsConfig]="bsConfig" aria-describedby="enddate"
                               [required]="allergyIntolerance.clinicalstatusvalue != 'Active'"
                               [ngClass]="{ 'is-invalid': enddate.invalid }" (keydown)="false"
@@ -353,7 +355,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   </div>
 
 
-                  <div class="form-group">
+                  <!-- <div class="form-group">
                     <label for="allergynotes">Notes:</label>
                     <textarea name="allergynotes" id="allergynotes" class="form-control"
                       [(ngModel)]="allergyIntolerance.allergynotes" #allergynotes="ngModel" rows="3"
@@ -362,14 +364,14 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                     <div [hidden]="allergynotes.valid || !appService.roleAccess('Edit Allergy') || !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)" class="text-danger">
                       <i>Allergy and Intolerance notes is required</i>
                     </div>
-                  </div>
+                  </div> -->
 
 
 
                   <div class="row">
                     <div class="col-md-4">
                       <div class="form-group">
-                        <label for="reportedbygroup">Source:</label>
+                        <!-- <label for="reportedbygroup">Source:</label> -->
                         <!-- <select name="reportedbygroup" id="reportedbygroup" class="form-control"
                           [(ngModel)]="allergyIntolerance.reportedbygroup" required #reportedbygroup="ngModel">
                           <option *ngFor="let opt of getReportedByList" value="{{ opt.allergyreportedbygroup_id }}">
@@ -379,7 +381,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <div [hidden]="reportedbygroup.valid" class="text-danger">
                           <i>Reported by is required</i>
                         </div> -->
-                        <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
+                        <!-- <ng-multiselect-dropdown [placeholder]="'Source'" [settings]="dropdownSettings"
                           *ngIf="!saving" [data]="sourceList" name="reportedbygroup" id="reportedbygroup"
                           [(ngModel)]="allergyIntolerance.reportedbygroup" (onSelect)="onItemSelect($event)"
                           (onSelectAll)="onSelectAll($event)" [disabled]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
@@ -387,7 +389,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         </ng-multiselect-dropdown>
                         <div [hidden]="allergyIntolerance.reportedbygroup?.length > 0" class="text-danger">
                           <i>Please select atleast 1 value</i>
-                        </div>
+                        </div> -->
                       </div>
                     </div>
                     <div class="col-md-4">
@@ -459,7 +461,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Validated By:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
                           {{allergyIntolerance.assertedby}} at
-                          {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.asserteddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                     <div class="col-md-2">
@@ -480,7 +484,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Documented by:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
                           {{allergyIntolerance.recordedby}} at
-                          {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.recordeddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -509,20 +515,22 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                     </div>
                   </div>
 
-                  <div *ngIf="allergyIntolerance.reactionconcepts">
-                    <div class="alert alert-danger" *ngIf="allergyIntolerance.reactionconcepts?.length == 0">
+                  <!-- <div *ngIf="allergyIntolerance.reactionconcepts">
+                    <div class="alert alert-danger" *ngIf="allergyIntolerance.reactionconcepts?.length == 0"> -->
                       <!-- <fa name="exclamation-triangle"></fa> -->
-                      <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Please add at least one reaction, you can add an uncoded
+                      <!-- <i class="fa fa-exclamation-triangle" aria-hidden="true"></i> Please add at least one reaction, you can add an uncoded
                       reaction
                       if
                       required.
                     </div>
-                  </div>
+                  </div> -->
 
                   <hr />
 
+                  <!-- <button class="btn btn-info text-white btn-block" (click)="saveEditAllergy()" [hidden]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
+                    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reactionconcepts?.length == 0 || allergyIntolerance?.reportedbygroup?.length == 0 || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"> -->
                   <button class="btn btn-info text-white btn-block" (click)="saveEditAllergy()" [hidden]="(!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"
-                    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reactionconcepts?.length == 0 || allergyIntolerance?.reportedbygroup?.length == 0 || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)">
+                    [disabled]="!editAllergyForm.form.valid || allergyIntolerance?.reportedbygroup?.length == 0 || (!appService.roleAccess('Edit Allergy')) && !(appService.roleAccess('Add Allergy') && appService.loggedInUserName == allergyIntolerance.assertedby)"> 
                     Save
                   </button>
 
@@ -553,7 +561,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
 
               <div *ngIf="allergyIntolerance.clinicalstatusvalue == 'Active'" [ngClass]="{
@@ -572,7 +580,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                 <span *ngIf="allergyIntolerance.causativeagentcodesystem != 'NON-ALLERGY'">{{allergyIntolerance.category}}
                   -
                 </span>
-                {{allergyIntolerance.causativeagentdescription}}
+                {{allergyIntolerance.causativeagentdescription}} <span *ngIf="allergyIntolerance.causativeagentcode == '74964007'" style="color: black;">(Not a codified value)</span>
               </div>
             </div>
 
@@ -744,11 +752,11 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                   </div>
 
 
-                  <div class="form-group">
+                  <!-- <div class="form-group">
                     <label for="allergynotes">Notes:</label>
                     <textarea name="allergynotes" id="allergynotes" class="form-control" disabled
                       [(ngModel)]="allergyIntolerance.allergynotes" #allergynotes="ngModel" rows="3"></textarea>
-                  </div>
+                  </div> -->
 
 
 
@@ -815,7 +823,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Validated By:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
                           {{allergyIntolerance.assertedby}} at
-                          {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.asserteddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.asserteddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                     <div class="col-md-2">
@@ -835,7 +845,9 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
                         <label>Documented by:</label>
                         <span class="form-control text-secondary bg-light" style="font-style: italic;font-weight:bold;">
                           {{allergyIntolerance.recordedby}} at
-                          {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}}</span>
+                          <!-- {{allergyIntolerance.recordeddatetime | date:'dd/MM/yyyy HH:mma'}} -->
+                          {{allergyIntolerance.recordeddt | date:'dd/MM/yyyy HH:mma'}}
+                        </span>
                       </div>
                     </div>
                   </div>

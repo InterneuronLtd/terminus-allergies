@@ -4,10 +4,16 @@
     "carerecorduri": "CARERECORD_URI",
     "terminologyuri": "TERMINOLOGY_URI/api/terminology/searchsnomed/VALUE",
     "autonomicuri": "AUTONOMIC_URI",
-    "imageserveruri": "IMAGESERVER/",
+    "imageserveruri": "https://imageserver-bucket.s3.eu-west-2.amazonaws.com/",
     "identityserveruri": "SYNAPSE_IDENTITY_URI",
-    "currentmedsmoduleuri": "TERMINUS_BUCKET_URI/currentmeds.js"
+    "currentmedsmoduleuri": "TERMINUS_BUCKET_URI/currentmeds.js",
+    "nhsdigitaluri": "NHSDIGITALINTEGRATION_URI"
   },
   "enablelogging": true,
-  "prodbuild": true
+  "prodbuild": true,
+  "appsettings": {
+    "can_send_notification": true,
+    "can_receive_notification": true
+  },
+  "enablegpconnect": true
 }

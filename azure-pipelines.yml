@@ -1,0 +1,93 @@
+
+
+trigger:
+- aws-development
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '16.14.0'
+  displayName: 'Install Node.js'
+
+- script: |
+    rm -rf package-lock.json
+    npm install -g @angular/cli@13.3.5
+    npm install --force
+    npm run prod-build
+    rm -rf node_modules
+    rm -rf .git
+    rm -rf .angular
+    
+  displayName: 'npm install and build'
+
+- script: |
+    find . -type f -name "*.json" -print0 | while IFS= read -r -d '' file; do
+    # Use sed to perform the replacement in each file.
+    echo $file
+    sed -i "s#AUTONOMIC_URI#https://autonomic.dev.interneuron.io#g" "$file"
+    sed -i "s#SYNAPSE_IDENTITY_URI#https://synapseidentityserver.dev.interneuron.io#g" "$file"
+    sed -i "s#SYNAPSE_DYNAMIC_URI#https://dynamicapi.azuredev.interneuron.io#g" "$file"
+    sed -i "s#TERMINOLOGY_URI#https://terminologyapi.azuredev.interneuron.io#g" "$file"
+    sed -i "s#CARERECORD_URI#https://carerecordapi.azuredev.interneuron.io#g" "$file"
+    sed -i "s#DOCUMENT_API_URI#https://synapsedocumentsapi.dev.interneuron.io#g" "$file"
+    sed -i "s#TERMINUS_URI#https://terminus.azuredev.interneuron.io#g" "$file"
+    sed -i "s#TERMINUS_BUCKET_URI#https://terminusmodules.blob.core.windows.net/modules#g" "$file"
+    sed -i "s#FDB_API_URI#https://fdbapi.dev.interneuron.io#g" "$file"
+    sed -i "s#WEB_NOTIFIER_URI#https://webnotifier.dev.interneuron.io#g" "$file"
+    sed -i "s#http://localhost:4200#https://terminus.azuredev.interneuron.io#g" "$file"
+    sed -i "s#WEB_NOTIFIER_URI#https://webnotifier.dev.interneuron.io#g" "$file"
+    sed -i "s#NHSDigitalIntegration_API_URL#https://nhsdigitalintegration.dev.interneuron.io#g" "$file"
+    sed -i "s#NHSDigitalIntegration_API_URL#https://nhsdigitalintegration.dev.interneuron.io#g" "$file"
+    sed -i "s#\"enableWSConnection\": false#\"enableWSConnection\": true#g" "$file"
+    sed -i "s#\"can_send_notification\": false#\"can_send_notification\": true#g" "$file"
+    sed -i "s#\"can_receive_notification\": false#\"can_receive_notification\": true#g" "$file"
+    done
+
+  displayName: 'content replacement'
+
+- script: | 
+    az login --service-principal -u $(sp_username) -p $(sp_password) --tenant $(tenant_id)
+    echo "login is done using service principal"
+    ip_address=$(curl -s https://api64.ipify.org)
+
+    echo "whitelisting $ip_address to terminusdev"
+    az storage account network-rule add -g arghya-test --account-name terminusdev --ip-address $ip_address
+    echo "whitelisting $ip_address to terminusdev is done"
+
+    # echo "whitelisting $ip_address to terminusmodules"
+    # az storage account network-rule add -g arghya-test --account-name terminusmodules --ip-address $ip_address
+    # echo "whitelisting $ip_address to terminusmodules is done"
+  displayName: 'whitelisting ip address'
+- script: |
+    sleep 60
+    JS_FILE_NAME=allergies.js
+    cp dist/terminus-allergies/main.js .
+    echo "main js copied to workspace"
+    
+    mv main.js $JS_FILE_NAME
+    echo "main js renamed to module name"
+    
+    az storage blob upload --account-name terminusmodules --type block --container-name modules --name $JS_FILE_NAME --type block --overwrite --file $JS_FILE_NAME --account-key $(account_key_modules_dev)
+    echo "module uploaded to conainer"
+
+    az storage blob upload-batch --account-name terminusdev --source dist/terminus-allergies/assets/ --destination '$web/assets' --overwrite --account-key $(account_key_terminus_dev)
+    echo "assets uploaded to terminus"
+
+    
+    az afd endpoint purge --resource-group arghya-test --profile-name terminusdev --endpoint-name terminusdev --domains terminus.azuredev.interneuron.io terminusdev-g4dyc5amegbwckan.z01.azurefd.net --content-paths '/*'
+    echo "afd purge done"
+  displayName: 'uploading contents to storage account'
+
+- script: |
+    ip_address=$(curl -s https://api64.ipify.org)
+    echo "deleting $ip_address from terminusdev"
+    az storage account network-rule remove -g arghya-test --account-name terminusdev --ip-address $ip_address
+    echo "deleting $ip_address from terminusdev is done"
+
+    # echo "deleting $ip_address from terminusmodules"
+    # az storage account network-rule remove -g arghya-test --account-name terminusmodules --ip-address $ip_address
+    # echo "deleting $ip_address from terminusmodules is done"
+  displayName: 'deleting ip'

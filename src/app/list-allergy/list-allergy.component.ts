@@ -1,23 +1,3 @@
-//BEGIN LICENSE BLOCK 
-//Interneuron Terminus
-
-//Copyright(C) 2023  Interneuron Holdings Ltd
-
-//This program is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, either version 3 of the License, or
-//(at your option) any later version.
-
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-//See the
-//GNU General Public License for more details.
-
-//You should have received a copy of the GNU General Public License
-//along with this program.If not, see<http://www.gnu.org/licenses/>.
-//END LICENSE BLOCK 
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { Person } from '../models/entities/core-person.model';
@@ -38,6 +18,9 @@ import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-d
 import { ToasterService } from '../services/toaster-service.service';
 import { SubjectsService } from '../services/subjects.service';
 import { AllergiesService } from '../services/allergies.service';
+import * as moment from 'moment';
+import { Allergy } from '../models/Allergy';
+
 @Component({
   selector: 'app-list-allergy',
   templateUrl: './list-allergy.component.html',
@@ -179,8 +162,14 @@ export class ListAllergyComponent {
     this.allergyIntolerance. allergynotes = null;
     this.allergyIntolerance.manifestationnotes = null;
 
-        //this.allergyIntolerance.category = "Flag";
-        this.allergyIntolerance.reactionconcepts = '{"_term":"flag","_code":"flag","bindingValue":"flag | flag","fsn":"flag","level":0,"parentCode":null}';
+    //this.allergyIntolerance.category = "Flag";
+    this.allergyIntolerance.reactionconcepts = '{"_term":"flag","_code":"flag","bindingValue":"flag | flag","fsn":"flag","level":0,"parentCode":null}';
+
+    this.allergyIntolerance.clinicalstatusdt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.reportedbydt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.recordeddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
 
     this.subscriptions.add(
       this.apiRequest.postRequest(this.postAllergyURI, this.allergyIntolerance)
@@ -227,6 +216,9 @@ export class ListAllergyComponent {
   }
 
   async initialiseData() {
+    if(this.appService.enableGPConnect){
+      this.getAllergiesDataFromGPConnect();
+    }
     await this.getAllergyListForPerson();
     await this.getCategoryList();
     await this.getClinicalStatusList();
@@ -246,7 +238,11 @@ export class ListAllergyComponent {
      .subscribe((response) => {
        this.allergyIntoleranceList = JSON.parse(response);
        this.allergyIntoleranceList.forEach((element,index) => {
-        this.allergyIntoleranceList[index].reactionconcepts = JSON.parse(element.reactionconcepts);
+        if(typeof element.reactionconcepts != 'string'){
+          element.reactionconcepts = JSON.stringify(element.reactionconcepts);
+        }
+        element.reactionconcepts = JSON.parse(element.reactionconcepts);
+        //this.allergyIntoleranceList[index].asserteddatetime = new Date(element.asserteddatetime).toISOString();
        });
        this.refreshingList = false;
      })
@@ -482,6 +478,12 @@ export class ListAllergyComponent {
     this.allergyIntolerance. allergynotes = null;
     this.allergyIntolerance.manifestationnotes = null;
 
+    this.allergyIntolerance.clinicalstatusdt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.reportedbydt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.recordeddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+    this.allergyIntolerance.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+
     this.subscriptions.add(
       this.apiRequest.postRequest(this.postAllergyURI, this.allergyIntolerance)
         .subscribe((response) => {
@@ -540,6 +542,7 @@ export class ListAllergyComponent {
     }
     data.assertedby = this.appService.loggedInUserName;
     data.asserteddatetime = this.allergyService.getDateTime();
+    data.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     
     delete data.poaname;
     delete data.poaonly;
@@ -551,6 +554,7 @@ export class ListAllergyComponent {
     updatedData.reportedbygroup = JSON.stringify(updatedData.reportedbygroup);
     updatedData.reactionconcepts = JSON.stringify(updatedData.reactionconcepts);
     updatedData.lastupdatedrecorddatetime = this.allergyService.getDateTime();
+    updatedData.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
     updatedData.reactiontext = updatedData.reactionconcepts;
 
     //update the entity record
@@ -595,10 +599,12 @@ export class ListAllergyComponent {
     this.reverifyList = true;
     this.allergyIntoleranceListUpated.forEach(element => {
       element.asserteddatetime = this.allergyService.getDateTime();
+      element.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
       element.allergyconcept = JSON.stringify(element.allergyconcept);
       element.reportedbygroup = JSON.stringify(element.reportedbygroup);
       element.reactionconcepts = JSON.stringify(element.reactionconcepts);
       element.lastupdatedrecorddatetime = this.allergyService.getDateTime();
+      element.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
       delete element.poaname;
       delete element.poaonly;
       delete element._sequenceid;
@@ -684,6 +690,191 @@ export class ListAllergyComponent {
 
   escapeRegex(string) {
     return string.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  }
+
+  getAllergiesDataFromGPConnect() {
+    this.subscriptions.add(
+      this.apiRequest.getRequest(this.appService.baseURI + "/GetListByAttribute?synapsenamespace=core&synapseentityname=personidentifier&synapseattributename=person_id&attributevalue=" + this.appService.personId)
+        .subscribe((response) => {
+          let nhsNumber = JSON.parse(response).filter(x => x.idtypecode == 'NHS');
+
+          if (nhsNumber != null && nhsNumber.length > 0) {
+            this.apiRequest.getRequest(this.appService.nhsDigitalURI + "/GPConnect/StructuredRecordByNHSNumber?nhsNumber=" + nhsNumber[0].idnumber)
+              .subscribe((response) => {
+                if (response && response.data && response.data.allergies) {
+
+                  let allergy: Allergy[] = response.data.allergies;
+
+                  if (allergy != null && allergy.length > 0) {
+                    for (let index = 0; index < allergy.length; index++) {
+                      const alrgy = allergy[index];
+
+                      let allergyIntolerance = Object.assign({}, this.allergyIntolerance);
+
+                      allergyIntolerance.allergyintolerance_id = String(Guid.create());
+                      allergyIntolerance.person_id = this.appService.personId;
+                      allergyIntolerance.encounter_id = null;
+                      allergyIntolerance.clinicalstatusvalue = alrgy.clinicalStatus;
+                      allergyIntolerance.clinicalstatusby = this.appService.loggedInUserName;
+                      allergyIntolerance.cliinicialstatusdatetime = this.allergyService.getDateTime();
+                      allergyIntolerance.reportedbygroup = '[{"allergysources_id": "9852bbb4-ed8e-4ac5-9c15-b18a1fb970f2", "source": "GP connect"}]';
+                      allergyIntolerance.reportedbyname = this.appService.currentPersonName;
+                      allergyIntolerance.reportedbydatetime = this.allergyService.getDateTime();
+                      allergyIntolerance.recordedby = this.appService.loggedInUserName;
+                      allergyIntolerance.recordeddatetime = this.allergyService.getDateTime();
+                      allergyIntolerance.verificationstatus = "Confirmed";
+                      allergyIntolerance.assertedby = this.appService.loggedInUserName;
+                      allergyIntolerance.asserteddatetime = this.allergyService.getDateTime();
+                      allergyIntolerance.lastupdatedrecorddatetime = this.allergyService.getDateTime();
+                      allergyIntolerance.allergynotes = null;
+                      allergyIntolerance.onsetdate = alrgy.startDate;
+                      allergyIntolerance.enddate = alrgy.endDate != null ? alrgy.endDate : null;
+                      allergyIntolerance.lastoccurencedate = alrgy.lastOccurrence;
+                      allergyIntolerance.displaywarning = "No errors";
+                      allergyIntolerance.clinicalstatusdt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+                      allergyIntolerance.reportedbydt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+                      allergyIntolerance.asserteddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+                      allergyIntolerance.recordeddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+                      allergyIntolerance.lastupdatedrecorddt = this.allergyService.getDateTimeinISOFormat(moment().toDate());
+
+                      if (alrgy.allergyType == null || (alrgy.allergyType != null && alrgy.allergyType.toLowerCase() == "allergy")) {
+                        allergyIntolerance.category = "Allergy";
+                      }
+
+                      if (alrgy.allergyType != null && alrgy.allergyType.toLowerCase() == "intolerance") {
+                        allergyIntolerance.category = "Sensitivity Intolerance";
+                      }
+
+                      if (alrgy.allergyCodes != null && alrgy.allergyCodes.length > 0) {
+                        for (let i = 0; i < alrgy.allergyCodes.length; i++) {
+                          const allergyCode = alrgy.allergyCodes[i];
+
+                          allergyIntolerance.causativeagentcodesystem = allergyCode.code == '716186003' ? 'NON-ALLERGY' : 'SNOMED CT';
+                          allergyIntolerance.causativeagentcode = allergyCode.system.indexOf("snomed") > -1 ? allergyCode.code == '716186003' ? 'No known allergies and intolerances' : allergyCode.code : '74964007';
+                          allergyIntolerance.causativeagentdescription = allergyCode.text == 'No known allergy' ? 'No known allergies and intolerances' : allergyCode.text;
+
+                          allergyIntolerance.category = allergyCode.code == '716186003' ? 'Flag' : allergyIntolerance.category;
+
+                          const startIndex = allergyCode.text.indexOf("(");
+                          const endIndex = allergyCode.text.indexOf(")");
+
+                          if (startIndex !== -1 && endIndex !== -1) {
+                            allergyIntolerance.allergentype = allergyCode.text.slice(startIndex + 1, endIndex);
+                          } else {
+                            allergyIntolerance.allergentype = '';
+                          }
+
+                          allergyIntolerance.allergyconcept = allergyCode.code == '716186003' ? null : '{"_term": "' + allergyCode.text + '", "_code": "' + allergyCode.code + '", "bindingValue": "' + allergyCode.code + ' | ' + allergyCode.text + '", "fsn": "' + allergyCode.text + '", "level": 0, "parentCode": null}';
+                        }
+                      }
+
+                      if (alrgy.reactions != null && alrgy.reactions.length > 0) {
+                        for (let j = 0; j < alrgy.reactions.length; j++) {
+                          const reaction = alrgy.reactions[j];
+
+                          for (let k = 0; k < reaction.manifestations.length; k++) {
+                            const manifestation = reaction.manifestations[k];
+                            const manifestationCode = manifestation.system.indexOf("snomed") > -1 ? manifestation.code : '74964007';
+                            allergyIntolerance.reactionconcepts = '[{"_term": "' + manifestation.text + '", "_code": "' + manifestationCode + '", "bindingValue": "' + manifestationCode + ' | ' + manifestation.text + '", "fsn": "' + manifestation.text + '", "level": 0, "parentCode": null}]';
+                            allergyIntolerance.reactiontext = JSON.stringify(allergyIntolerance.reactionconcepts);
+                          }
+
+                          if (alrgy.criticality == null && reaction.severity != null && reaction.severity.toLowerCase() == "severe") {
+                            allergyIntolerance.criticality = "Life Threatening";
+                          }
+
+                          if (alrgy.criticality == null && reaction.severity != null && (reaction.severity.toLowerCase() == "mild" || reaction.severity.toLowerCase() == "moderate")) {
+                            allergyIntolerance.criticality = "Unable to Assess";
+                          }
+
+                          if (alrgy.criticality != null && alrgy.criticality.toLowerCase() == "high") {
+                            allergyIntolerance.criticality = "Life Threatening";
+                          }
+
+                          if (alrgy.criticality != null && alrgy.criticality.toLowerCase() == "low") {
+                            allergyIntolerance.criticality = "Non-Life Threatening";
+                          }
+
+                          if (alrgy.criticality == null && reaction.severity == null) {
+                            allergyIntolerance.criticality = "Unable to Assess";
+                          }
+
+                          allergyIntolerance.manifestationnotes = reaction.description;
+                        }
+                      }
+                      else {
+                        if (alrgy.criticality == null) {
+                          allergyIntolerance.criticality = "Unable to Assess";
+                        }
+                        if (alrgy.allergyCodes[0].code == '716186003') {
+                          allergyIntolerance.reactionconcepts = '{"_term":"flag","_code":"flag","bindingValue":"flag | flag","fsn":"flag","level":0,"parentCode":null}';
+                        }
+                      }
+
+                      this.subscriptions.add(
+                        this.apiRequest.getRequest(this.appService.baseURI + "/GetBaseViewListByAttribute/terminus_personallergylist?synapseattributename=person_id&attributevalue=" + this.appService.personId)
+                          .subscribe((response) => {
+                            let allergies = JSON.parse(response);
+
+                            const exists = allergies.some((element) => {
+                              return element.causativeagentcode === allergyIntolerance.causativeagentcode;
+                            });
+
+                            if ((allergyIntolerance.causativeagentcode == '716186003' && allergies != null && allergies.length == 0)) {
+                              this.subscriptions.add(
+                                this.apiRequest.postRequest(this.appService.baseURI + "/PostObject?synapsenamespace=core&synapseentityname=allergyintolerance", allergyIntolerance)
+                                  .subscribe((response) => {
+                                    this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                                    this.getAllergyListForPerson();
+                                  })
+                              );
+                            }
+                            else if (!exists) {
+                              this.subscriptions.add(
+                                this.apiRequest.postRequest(this.appService.baseURI + "/PostObject?synapsenamespace=core&synapseentityname=allergyintolerance", allergyIntolerance)
+                                  .subscribe((response) => {
+
+                                    const nonAllergyRecordExists = allergies.some((rec) => {
+                                      return rec.causativeagentcodesystem == "NON-ALLERGY" && rec.clinicalstatusvalue == "Active";
+                                    });
+
+                                    if(nonAllergyRecordExists){
+                                      allergies.forEach((element) => {
+                                        if (element.causativeagentcodesystem == "NON-ALLERGY" && element.clinicalstatusvalue == "Active") {
+                                          delete element['poaonly'];
+                                          delete element['poaname'];
+                                          element.reportedbygroup = JSON.parse(element.reportedbygroup);
+                                          element.reportedbygroup = JSON.stringify(element.reportedbygroup);
+                                          element.clinicalstatusvalue = 'Inactive';
+                                          element.enddate = this.allergyService.getDate();
+  
+                                          //update the entity record
+                                          this.subscriptions.add(
+                                            this.apiRequest.postRequest(this.appService.baseURI + "/PostObject?synapsenamespace=core&synapseentityname=allergyintolerance", element)
+                                              .subscribe((response) => {
+                                                this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                                                this.getAllergyListForPerson();
+                                              })
+                                          );
+                                        }
+                                      });
+                                    }
+                                    else{
+                                      this.subjects.frameworkEvent.next("UPDATE_HEIGHT_WEIGHT");
+                                      this.getAllergyListForPerson();
+                                    }
+                                  })
+                              );
+                            }
+                          })
+                      );
+                    }
+                  }
+                }
+              })
+          }
+        })
+    );
   }
 
 }

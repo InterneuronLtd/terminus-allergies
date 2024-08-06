@@ -1,23 +1,3 @@
-//BEGIN LICENSE BLOCK 
-//Interneuron Terminus
-
-//Copyright(C) 2023  Interneuron Holdings Ltd
-
-//This program is free software: you can redistribute it and/or modify
-//it under the terms of the GNU General Public License as published by
-//the Free Software Foundation, either version 3 of the License, or
-//(at your option) any later version.
-
-//This program is distributed in the hope that it will be useful,
-//but WITHOUT ANY WARRANTY; without even the implied warranty of
-//MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-//See the
-//GNU General Public License for more details.
-
-//You should have received a copy of the GNU General Public License
-//along with this program.If not, see<http://www.gnu.org/licenses/>.
-//END LICENSE BLOCK 
 import { HttpClient } from '@angular/common/http';
 // import { THIS_EXPR } from '@angular/compiler/src/output/output_ast';
 // import { escapeRegExp } from '@angular/compiler/src/util';
@@ -36,6 +16,7 @@ import { AllergyClinicalStatus } from '../models/entities/allergy-clinical-statu
 import { AllergyCriticality } from '../models/entities/allergy-criticality';
 import { AllergyIntolerance } from '../models/entities/allergy-intolerance';
 import { AllergyReportedByGroup } from '../models/entities/allergy-reported-by-group';
+import { AllergySources } from '../models/entities/allergy-source';
 import { AllergyVerificationStatus } from '../models/entities/allergy-verification-status';
 import { SNOMED } from '../models/snomed-model';
 import { ApirequestService } from '../services/apirequest.service';
@@ -75,12 +56,14 @@ export class AllergyHistoryViewerComponent implements OnInit {
   verificationStatusList: AllergyVerificationStatus[];
   reportedByGroupList: AllergyReportedByGroup[];
   allergenName: string;
+  sourceList: AllergySources[];
 
   getCategoryListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergycategory&orderby=displayorder ASC";
   getClinicalStatusListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyclinicalstatus&orderby=displayorder ASC";
   getCriticalityListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergycriticality&orderby=displayorder ASC";
   getVerificationStatusListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyverificationstatus&orderby=displayorder ASC";
   getReportedByGroupListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergyreportedbygroup&orderby=displayorder ASC";
+  getSourceListURI: string = this.appService.baseURI + "/GetList?synapsenamespace=meta&synapseentityname=allergysources&orderby=displayname ASC";
 
     //Multiselect
     dropdownList = [];
@@ -127,8 +110,8 @@ export class AllergyHistoryViewerComponent implements OnInit {
 
     this.dropdownSettings = {
       singleSelection: false,
-      idField: 'allergyreportedbygroup_id',
-      textField: 'groupname',
+      idField: 'allergysources_id',
+      textField: 'source',
       selectAllText: 'Select All',
       unSelectAllText: 'UnSelect All',
       itemsShowLimit: 10,
@@ -146,7 +129,7 @@ export class AllergyHistoryViewerComponent implements OnInit {
     this.getCriticalityList();
     this.getVerificationStatusList();
     this.getReportedByList();
-
+    this.getSourceList();
   }
 
   async GetAllergyHistory() {
@@ -157,6 +140,9 @@ export class AllergyHistoryViewerComponent implements OnInit {
         var resp = JSON.parse(response);
          this.allergyHistoryList = resp.reverse();
          this.allergenName = this.allergyHistoryList[0].causativeagentdescription.replace('(Non-coded)','').trim();
+         if(this.allergyHistoryList[0].causativeagentcode == '74964007'){
+          this.allergenName = this.allergenName + ' - (Not a codified value)';
+         }
          this.spinner.hide("form-history-spinner");
        })
      )
@@ -209,6 +195,15 @@ export class AllergyHistoryViewerComponent implements OnInit {
    )
   }
 
+  async  getSourceList() {
+    await this.subscriptions.add(
+     this.apiRequest.getRequest(this.getSourceListURI)
+     .subscribe((response) => {
+       this.sourceList = JSON.parse(response);
+     })
+   )
+  }
+
 
   public decline() {
     this.activeModal.close(false);
@@ -254,11 +249,23 @@ export class AllergyHistoryViewerComponent implements OnInit {
     this.allergyIntolerance.lastoccurencedate = new Date (this.allergyIntolerance.lastoccurencedate as Date);
   }
 
-  try {
+  if(this.allergyIntolerance.reportedbygroup != '' && !Array.isArray(this.allergyIntolerance.reportedbygroup)) {
     this.allergyIntolerance.reportedbygroup = JSON.parse(this.allergyIntolerance.reportedbygroup);
+  } 
+  else if(this.allergyIntolerance.reportedbygroup != '' && Array.isArray(this.allergyIntolerance.reportedbygroup)) {
+    let arr = [];
+    this.allergyIntolerance.reportedbygroup.forEach(element => {
+      arr.push(element);
+    });
+
+    this.allergyIntolerance.reportedbygroup = JSON.parse(JSON.stringify(arr));
   }
-  catch(ex) {
+  else if (this.allergyIntolerance.reportedbygroup == ''){
     this.allergyIntolerance.reportedbygroup = JSON.parse('[]');
+  }
+
+  if(Array.isArray(this.allergyIntolerance.reportedbygroup)){
+    this.allergyIntolerance.reportedbygroup = JSON.parse(JSON.stringify(this.allergyIntolerance.reportedbygroup));
   }
 
   //Cast concept strings to concepts
@@ -270,13 +277,39 @@ export class AllergyHistoryViewerComponent implements OnInit {
     this.allergyIntolerance.allergyconcept = '{"_term":"flag","_code":"flag","bindingValue":"flag | flag","fsn":"flag","level":0,"parentCode":null}';
   }
 
+  //this.allergyIntolerance.asserteddatetime =  new Date(this.allergyIntolerance.asserteddatetime).toISOString(); 
+  //this.allergyIntolerance.recordeddatetime =  new Date(this.allergyIntolerance.recordeddatetime).toISOString(); 
 
-  this.allergyIntolerance.allergyconcept = JSON.parse(this.allergyIntolerance.allergyconcept) as SNOMED;
+  if(typeof this.allergyIntolerance.allergyconcept != 'string')
+  {
+    this.allergyIntolerance.allergyconcept = JSON.parse(JSON.stringify(this.allergyIntolerance.allergyconcept)) as SNOMED;
+  }
+  else
+  {
+    this.allergyIntolerance.allergyconcept = JSON.parse(this.allergyIntolerance.allergyconcept) as SNOMED;
+  }
+  
+  if(this.allergyIntolerance.reactionconcepts != '' && !Array.isArray(this.allergyIntolerance.reactionconcepts)){
+    this.allergyIntolerance.reactionconcepts = this.replaceAll(this.allergyIntolerance.reactionconcepts, '_term', 'term');
+    this.allergyIntolerance.reactionconcepts = this.replaceAll(this.allergyIntolerance.reactionconcepts, '_code', 'code');
+  }
+  
+  //this.allergyIntolerance.reactionconcepts = JSON.parse(this.allergyIntolerance.reactionconcepts) as SNOMED[];
 
-  this.allergyIntolerance.reactionconcepts = this.replaceAll(this.allergyIntolerance.reactionconcepts, '_term', 'term');
-  this.allergyIntolerance.reactionconcepts = this.replaceAll(this.allergyIntolerance.reactionconcepts, '_code', 'code');
-  this.allergyIntolerance.reactionconcepts = JSON.parse(this.allergyIntolerance.reactionconcepts) as SNOMED[];
+  if(this.allergyIntolerance.reactionconcepts != '' && !Array.isArray(this.allergyIntolerance.reactionconcepts)) {
+    this.allergyIntolerance.reactionconcepts = JSON.parse(this.allergyIntolerance.reactionconcepts) as SNOMED[];
+  } 
+  else if(this.allergyIntolerance.reactionconcepts != '' && Array.isArray(this.allergyIntolerance.reactionconcepts)) {
+    let arr = [];
+    this.allergyIntolerance.reactionconcepts.forEach(element => {
+      arr.push(element);
+    });
 
+    this.allergyIntolerance.reactionconcepts = JSON.parse(JSON.stringify(arr));
+  }
+  else if (this.allergyIntolerance.reactionconcepts == ''){
+    this.allergyIntolerance.reactionconcepts = JSON.parse('[]');
+  }
 
     this.historyView = 'form';
   }
