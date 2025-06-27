@@ -1,0 +1,10 @@
+INSERT INTO entitystore.meta_allergysources (allergysources_id, "_row_id", "_sequenceid", "_contextkey", "_createdtimestamp", "_createddate", "_createdsource", "_createdmessageid", "_createdby", "_recordstatus", "_timezonename", "_timezoneoffset", "_tenant", "source", description, displayname, context, "_deleteddate", "_deletedby", "_additionalinfo") VALUES('9852bbb4-ed8e-4ac5-9c15-b18a1fb970f2', 'f0bf333a-6e58-4500-a917-7aea3ef9f1e4', 1, NULL, '2024-01-23 13:00:00.000', '2024-01-23 13:00:00.000', NULL, NULL, 'unknown', 1, NULL, NULL, NULL, 'GP connect', 'GP connect', 'GP connect', '', NULL, NULL, NULL);
+INSERT INTO entitystorematerialised.meta_allergysources (allergysources_id, "_row_id", "_sequenceid", "_contextkey", "_createdtimestamp", "_createddate", "_createdsource", "_createdmessageid", "_createdby", "_recordstatus", "_timezonename", "_timezoneoffset", "_tenant", "source", description, displayname, context, "_deleteddate", "_deletedby", "_additionalinfo") VALUES('9852bbb4-ed8e-4ac5-9c15-b18a1fb970f2', 'f0bf333a-6e58-4500-a917-7aea3ef9f1e4', 1, NULL, '2024-01-23 13:00:00.000', '2024-01-23 13:00:00.000', NULL, NULL, 'unknown', 1, NULL, NULL, NULL, 'GP connect', 'GP connect', 'GP connect', '', NULL, NULL, NULL);
+
+update entitystore.core_allergyintolerance
+set reportedbygroup = '[{"allergysources_id":"9852bbb4-ed8e-4ac5-9c15-b18a1fb970f2","source":"GP connect"}]'
+where reportedbygroup ilike '%nhs care%'
+
+update entitystorematerialised.core_allergyintolerance
+set reportedbygroup = '[{"allergysources_id":"9852bbb4-ed8e-4ac5-9c15-b18a1fb970f2","source":"GP connect"}]'
+where reportedbygroup ilike '%nhs care%'

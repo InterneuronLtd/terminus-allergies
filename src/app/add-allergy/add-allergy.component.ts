@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -411,7 +411,7 @@ export class AddAllergyComponent {
       this.allergyIntolerance. allergynotes = null;
       this.allergyIntolerance.manifestationnotes = null;
 
-      this.allergyIntolerance.allergyconcept = {} as SNOMED;
+      this.allergyIntolerance.allergyconcept = '';
       this.allergyIntolerance.reactionconcepts = [] as SNOMED[];
 
       this.allergyIntolerance.displaywarning = "No errors";

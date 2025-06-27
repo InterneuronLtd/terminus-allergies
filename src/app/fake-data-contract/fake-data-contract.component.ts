@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ import { ConfigService } from "../services/config.service";
 export class FakeDataContractComponent implements OnInit, OnDestroy {
   appContexts: string;
 
-  dtOptions: DataTables.Settings = {};
+  dtOptions: any = {};
   dtTrigger: Subject<any> = new Subject<any>();
 
   showManualContext: boolean = false;
@@ -120,7 +120,7 @@ export class FakeDataContractComponent implements OnInit, OnDestroy {
                     var data = JSON.parse(response);
                     //console.log(data);
                     this.persons = data;
-                    this.dtTrigger.next();
+                    this.dtTrigger.next(undefined);
                     this.spinner.hide("spinner2");
                   })
               );
@@ -152,8 +152,8 @@ export class FakeDataContractComponent implements OnInit, OnDestroy {
 
     this.appService.personId = this.personId;
     //this.appService.encounterId = this.encounterId;
-    this.subjects.apiServiceReferenceChange.next();
-    this.subjects.personIdChange.next();
+    this.subjects.apiServiceReferenceChange.next(undefined);
+    this.subjects.personIdChange.next(undefined);
   }
 
   toggleContextView() {

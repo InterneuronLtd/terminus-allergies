@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import { HttpClient } from '@angular/common/http';
 // import { escapeRegExp } from '@angular/compiler/src/util';
 import { Component, Input, OnInit, ViewEncapsulation } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { FormioForm, FormioOptions } from 'angular-formio';
+// import { FormioForm, FormioOptions } from 'angular-formio';
 import { IDropdownSettings } from 'ng-multiselect-dropdown';
 import { BsModalService } from 'ngx-bootstrap/modal';
 import { NgxSpinnerService } from 'ngx-spinner';
@@ -98,9 +98,9 @@ export class AllergyHistoryViewerComponent implements OnInit {
     //Multiselect
 
 
-  public formioOptions: FormioOptions = {
-    'disableAlerts': true
-  };
+  // public formioOptions: FormioOptions = {
+  //   'disableAlerts': true
+  // };
 
   //public options: FormioOptions;
   options: Object = {

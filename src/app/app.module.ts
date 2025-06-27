@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -27,13 +27,14 @@ import {
 } from "@angular/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { AppComponent } from "./app.component";
+import { CommonModule } from '@angular/common';
 
 import { createCustomElement } from "@angular/elements";
 import { ViewerComponent } from "./viewer/viewer.component";
 
 import { ModalModule, BsModalRef, BsModalService } from "ngx-bootstrap/modal";
 
-import { HttpClientModule } from "@angular/common/http";
+import { provideHttpClient, withInterceptorsFromDi } from "@angular/common/http";
 import { FakeDataContractComponent } from "./fake-data-contract/fake-data-contract.component";
 
 import { DataTablesModule } from "angular-datatables";
@@ -41,7 +42,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxSpinnerModule } from "ngx-spinner";
 import { ToastrModule } from "ngx-toastr";
 import { environment } from "src/environments/environment";
-import { FormioAppConfig, FormioModule } from "angular-formio";
+import { FormioAppConfig, FormioModule } from "@formio/angular";
 import { IdentifierTransformPipe } from "./pipes/identifier-transform";
 import { LinebreaksPipe } from "./pipes/line-breaks";
 import { AppConfig } from "./formio.config";
@@ -68,8 +69,8 @@ import { EditAllergyComponent } from './edit-allergy/edit-allergy.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 //import { AutoCompleteValidationDirective } from "./utilities/auto-complete-validation";
 
-@NgModule({
-    declarations: [
+@NgModule({ 
+  declarations: [
         AppComponent,
         ViewerComponent,
         FakeDataContractComponent,
@@ -84,8 +85,10 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
         ListAllergyComponent,
         EditAllergyComponent,
     ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
+    bootstrap: [], 
     imports: [
-        FormioModule,
+        // FormioModule,
         ToastrModule.forRoot({
             timeOut: 10000,
             preventDuplicates: true,
@@ -95,33 +98,24 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
         DataTablesModule,
         BrowserModule,
         ModalModule.forRoot(),
-        HttpClientModule,
         FormsModule,
         NgbModule,
         BsDatepickerModule.forRoot(),
         PopoverModule.forRoot(),
         AutoCompleteModule,
         NgMultiSelectDropDownModule.forRoot(),
-        FontAwesomeModule,
-    ],
-    schemas: [CUSTOM_ELEMENTS_SCHEMA],
-    providers: [
+        FontAwesomeModule], 
+      providers: [
         BsModalRef,
         BsModalService,
-        { provide: FormioAppConfig, useValue: AppConfig },
+        CommonModule,
+        // { provide: FormioAppConfig, useValue: AppConfig },
         BsDatepickerConfig,
         ConfirmationDialogService,
         AllergyLookupDescriptionsService,
-        AllergyHistoryViewerService
-    ],
-    bootstrap: [],
-    entryComponents: [
-      AppComponent,
-      ConfirmationDialogComponent,
-      AllergyLookupDescriptionsComponent,
-      AllergyHistoryViewerComponent
-    ],
-})
+        AllergyHistoryViewerService,
+        provideHttpClient(withInterceptorsFromDi())
+    ] })
 export class AppModule implements DoBootstrap {
   constructor(private injector: Injector) { }
 

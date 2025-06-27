@@ -1,7 +1,7 @@
 <!--BEGIN LICENSE BLOCK--> 
 <!--Interneuron Terminus
 
-Copyright(C) 2024  Interneuron Limited
+Copyright(C) 2025  Interneuron Limited
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ along with this program.If not, see<http://www.gnu.org/licenses/>. -->
 
         <h6>Select Allergen</h6>
         <p-autoComplete [suggestions]="results" autoCompleteValidation (completeMethod)="search($event)"
-          [multiple]="false" [forceSelection]="true" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"
+          [multiple]="false" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"
           (onSelect)="selectedValue($event)" (onUnselect)="unSelectedValue($event)" [minLength]="3" delay="1000"
           #autocomplete [(ngModel)]="allergyIntolerance.allergyconcept" field="term">
           <ng-template let-allergen pTemplate="item">

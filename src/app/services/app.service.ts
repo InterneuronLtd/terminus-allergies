@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import { Encounter } from '../models/entities/encounter.model';
 import { ConfigModel } from '../models/config.model';
 import { action } from '../models/filter.model';
 // @ts-ignore
-import jwt_decode from "jwt-decode";
+import {jwtDecode} from "jwt-decode";
 
 @Injectable({
   providedIn: 'root'
@@ -90,7 +90,7 @@ export class AppService {
 
   decodeAccessToken(token: string): any {
     try {
-      return jwt_decode(token);
+      return jwtDecode(token);
     }
     catch (Error) {
       console.log("JWT Decode Error:" + Error)

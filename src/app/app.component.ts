@@ -1,7 +1,7 @@
 //BEGIN LICENSE BLOCK 
 //Interneuron Terminus
 
-//Copyright(C) 2024  Interneuron Limited
+//Copyright(C) 2025  Interneuron Limited
 
 //This program is free software: you can redistribute it and/or modify
 //it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ import { KeyValuePair } from "./models/keyvaluepair";
 import { ConfigService } from "./services/config.service";
 import { Console } from "console";
 import { ToastContainerDirective, ToastrService } from "ngx-toastr";
-import jwtDecode, { JwtDecodeOptions } from "./../../node_modules/jwt-decode";
+import {jwtDecode,JwtDecodeOptions } from "./../../node_modules/jwt-decode";
 import { ConfirmationDialogService } from "./confirmation-dialog/confirmation-dialog.service";
 import { AllergiesService } from "./services/allergies.service";
 
@@ -250,11 +250,11 @@ export class AppComponent implements OnInit {
           this.appService.logToConsole(
             "Service reference is being published from init config"
           );
-          this.subjects.apiServiceReferenceChange.next();
+          this.subjects.apiServiceReferenceChange.next(undefined);
           this.appService.logToConsole(
             "personid is being published from init config"
           );
-          this.subjects.personIdChange.next();
+          this.subjects.personIdChange.next(undefined);
         })
     );
   }
